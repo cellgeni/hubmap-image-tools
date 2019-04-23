@@ -1,9 +1,9 @@
 #!/usr/bin/env Rscript
 
+suppressMessages( library( Cardinal ) )
+    
 create_msimagingexperiment_object <- function( filename ) {
 
-    suppressMessages( library( Cardinal ) )
-    
     message( paste( "Reading data from", filename, "..." ) )
 
     ims_full_data <- read.csv( filename, header = FALSE, stringsAsFactors = FALSE )
@@ -77,3 +77,5 @@ create_msimagingexperiment_object <- function( filename ) {
 
     return( msdata )
 }
+
+
