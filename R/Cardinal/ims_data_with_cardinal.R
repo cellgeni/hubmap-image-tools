@@ -1,5 +1,6 @@
 #!/usr/bin/env Rscript
 
+suppressMessages( library( tools ) )
 suppressMessages( library( Cardinal ) )
     
 create_msimagingexperiment_object <- function( filename ) {
@@ -75,12 +76,41 @@ create_msimagingexperiment_object <- function( filename ) {
     fdata <- MassDataFrame( mz = mz_values )
     idata <- ImageArrayList( list( ims_image_matrix ) )
 
+    # Name for the experiment, taken from the CSV filename; can be used to
+    # write files etc.
+    exptName <- basename( file_path_sans_ext( filename ) )
+    exptMetadata <- list( experiment_name = exptName )
+
     # TODO: do some sanity checks to make sure that dimensions of the above components match.
 
     # Create the object.
-    msdata <- MSImagingExperiment( imageData = idata, featureData = fdata, pixelData = pdata )
+    msdata <- MSImagingExperiment( 
+        imageData = idata, 
+        featureData = fdata, 
+        pixelData = pdata,
+        metadata = exptMetadata
+    )
 
     return( msdata )
 }
 
 
+# Write an MSImagingExperiment object to current working dir, named to match
+# the original data file.
+write_imzml <- function( msdata ) {
+    
+    # exptName is used for the filename stem of the imzML files *.ibd and
+    # *.imzml , and was taken from the name of the original CSV file when the
+    # object was created.
+    exptName <- metadata( msdata )$experiment_name
+    
+    # Use 32-bit float for intensity data (got an error with 64-bit).
+    # Use current working dir for now.
+    writeImzML(
+        msdata,
+        exptName,
+        folder = ".",
+        mz.type = "64-bit float",
+        intensity.type = "32-bit float"
+    )
+}
