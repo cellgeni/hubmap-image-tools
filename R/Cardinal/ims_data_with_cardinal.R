@@ -49,6 +49,11 @@ create_msimagingexperiment_object <- function( filename ) {
     ims_full_data <- as.data.frame( 
         sapply( ims_full_data, function( x ) as.numeric( x ) )
     )
+    
+    # Make sure that the x and y columns of type integer. If they are not it
+    # can cause problems for writing to imzML format.
+    ims_full_data$x <- as.integer( ims_full_data$x )
+    ims_full_data$y <- as.integer( ims_full_data$y )
 
     # Ensure the data are ordered by x first and then y.
     ims_full_data <- ims_full_data[ order( ims_full_data$x, ims_full_data$y ), ]
