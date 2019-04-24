@@ -76,12 +76,12 @@ create_msimagingexperiment_object <- function( filename ) {
     fdata <- MassDataFrame( mz = mz_values )
     idata <- ImageArrayList( list( ims_image_matrix ) )
 
+    # TODO: should we have some sanity checks here to make sure dimensions match etc?
+
     # Name for the experiment, taken from the CSV filename; can be used to
     # write files etc.
     exptName <- basename( file_path_sans_ext( filename ) )
     exptMetadata <- list( experiment_name = exptName )
-
-    # TODO: do some sanity checks to make sure that dimensions of the above components match.
 
     # Create the object.
     msdata <- MSImagingExperiment( 
