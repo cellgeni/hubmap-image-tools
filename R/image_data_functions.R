@@ -1,15 +1,21 @@
 #!/usr/bin/env Rscript
 
-suppressMessages( library( tools ) )
-suppressMessages( library( Cardinal ) )
-    
-create_msimagingexperiment_object <- function( filename ) {
+suppressPackageStartupMessages( { 
+    library( tools )
+    library( Cardinal )
+    library( RBioFormats )
+} )
+   
 
-    message( paste( "Reading data from", filename, "..." ) )
+# Read mass spectrometry imaging data from CSV file and build a Cardinal
+# MSImagingExperiment object from it.
+create_msimagingexperiment_object <- function( filename ) {
+    
+    message( paste( "Reading mass spectrometry imaging data from", filename, "..." ) )
 
     ims_full_data <- read.csv( filename, header = FALSE, stringsAsFactors = FALSE )
 
-    message( "File read successfully" )
+    message( "File read successfully. Building MSImagingExperiment object..." )
 
     # Find x and y coordinate columns
     xcol_idx <- which( ims_full_data[ 1, ] == "x" )
@@ -90,6 +96,8 @@ create_msimagingexperiment_object <- function( filename ) {
         pixelData = pdata,
         metadata = exptMetadata
     )
+    
+    message( "MSImagingExperiment object created." )
 
     return( msdata )
 }
@@ -114,3 +122,18 @@ write_imzml <- function( msdata ) {
         intensity.type = "32-bit float"
     )
 }
+
+
+# Read TIFF file metadata with RBioFormats package.
+read_tiff_metadata <- function( filename ) {
+
+    message( paste( "Reading TIFF metadata from file", filename, "..." ) )
+
+    tiffMetadata <- read.metadata( filename )
+
+    message( "TIFF metadata read successfully." )
+
+    return( tiffMetadata )
+}
+
+
