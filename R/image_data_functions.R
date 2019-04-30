@@ -160,7 +160,7 @@ create_image_data_list <- function( dataFiles ) {
 
             else if( grepl( "\\.tiff?$", dataFile, ignore.case = TRUE ) ) {
 
-                read_tiff_metadata( dataFile )
+                list( read_tiff_metadata( dataFile ) )
             }
         }
     )
@@ -171,10 +171,6 @@ create_image_data_list <- function( dataFiles ) {
 
 # Print a little report about the image data representations.
 print_report <- function( imageSet ) {
-
-	cat( "\n-----------------\n" )
-	cat( "Image data report\n" )
-	cat( "-----------------\n" )
 
 	invisible( sapply(
 		names( imageSet ),
