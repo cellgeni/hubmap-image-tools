@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-# Algorithms for calculating image sharpness metrics.
+# Algorithms for calculating image quality metrics.
 # Base on code from https://github.com/IDR/idr-notebooks/blob/master/CalculateSharpness.ipynb
 
 class ImageQualityMetrics:
