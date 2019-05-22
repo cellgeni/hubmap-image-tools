@@ -27,3 +27,4 @@ fourierBasedSharpnessMetric <- function( fftshiftFunctionsFile, plane ) {
     sharpness <- Th/prod( dim( plane ) )
 
     return( sharpness )
+}
