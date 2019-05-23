@@ -103,6 +103,34 @@ create_msimagingexperiment_object <- function( filename ) {
 }
 
 
+ims_image_summary_stats <- function( msdata ) {
+    
+    summaryStats <- sapply( features( msdata ), function( i ) {
+        
+        summary( as.vector( slice( msdata, i ) ) )
+    } )
+
+    return( summaryStats )
+}
+
+
+ims_image_histograms <- function( msdata ) {
+
+    numHistograms <- length( features( msdata ) )
+    
+    # Plot in separate images or all in the same image on a grid?
+}
+
+
+# Get image sharpness metrics for IMS data (not sure if this is really relevant?).
+ims_image_sharpness <- function( msdata ) {
+
+    # Need to convert NAs to a numeric value before Fourier transform can be performed.
+    # Convert to zero? Or e.g. median of surrounding pixels?
+    
+}
+
+
 # Write an MSImagingExperiment object to current working dir, named to match
 # the original data file.
 write_imzml <- function( msdata ) {
