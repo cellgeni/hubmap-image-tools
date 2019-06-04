@@ -89,6 +89,7 @@ create_msimagingexperiment_object <- function( filename, metadataFile ) {
     exptName <- basename( file_path_sans_ext( filename ) )
 
     # Create a list for the experimental metadata.
+    # NB: access with "msiInfo( msdata )@metadata"
     exptMetadata <- list( experiment_name = exptName )
 
     # Read the metadata file, if there is one.
@@ -103,7 +104,6 @@ create_msimagingexperiment_object <- function( filename, metadataFile ) {
         # Add the table to the metadata list for the experiment object.
         exptMetadata$metadataTable <- metadataTable
     }
-
 
     # Create the object.
     msdata <- MSImagingExperiment( 
