@@ -9,7 +9,7 @@ suppressPackageStartupMessages( {
 
 # Read mass spectrometry imaging data from CSV file and build a Cardinal
 # MSImagingExperiment object from it.
-create_msimagingexperiment_object <- function( filename ) {
+create_msimagingexperiment_object <- function( filename, metadataFile ) {
     
     message( paste( "Reading mass spectrometry imaging data from", filename, "..." ) )
 
@@ -87,7 +87,23 @@ create_msimagingexperiment_object <- function( filename ) {
     # Name for the experiment, taken from the CSV filename; can be used to
     # write files etc.
     exptName <- basename( file_path_sans_ext( filename ) )
+
+    # Create a list for the experimental metadata.
     exptMetadata <- list( experiment_name = exptName )
+
+    # Read the metadata file, if there is one.
+    if( !missing( metadataFile ) ) {
+        
+        metadataTable <- read.csv( metadataFile, header = FALSE, stringsAsFactors = FALSE )
+
+        # Remove empty columns, if any.
+        nonNAcols <- !sapply( metadataTable, function( x ) all( is.na( x ) ) )
+        metadataTable <- metadataTable[ , nonNAcols ]
+
+        # Add the table to the metadata list for the experiment object.
+        exptMetadata$metadataTable <- metadataTable
+    }
+
 
     # Create the object.
     msdata <- MSImagingExperiment( 
