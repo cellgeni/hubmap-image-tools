@@ -127,7 +127,7 @@ write_ims_images <- function( msdata, targetDir ) {
         # Get the molecule name from the metadata.
         exptMetadata <- msiInfo( msdata )@metadata
 
-        moleculeName <- exptMetadata$metadataTable[ , 2 ][ which( exptMetadata$metadataTable[ , 1 ] == mz ) ]
+        moleculeName <- exptMetadata$metadataTable[ , 7 ][ which( exptMetadata$metadataTable[ , 1 ] == mz ) ]
         
         # FIXME: here using PNG images, this can be changed to any other format.
         imgFile <- file.path( targetDir, paste( "plane_", mz, ".png", sep = "" ) )
