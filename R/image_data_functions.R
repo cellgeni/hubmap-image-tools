@@ -119,6 +119,27 @@ create_msimagingexperiment_object <- function( filename, metadataFile ) {
 }
 
 
+write_ims_images <- function( msdata, targetDir ) {
+
+    # FIXME: stopping at the first 10 images for now.
+    for( mz in mz( msdata )[ 1:10 ] ) { 
+            
+        # Get the molecule name from the metadata.
+        exptMetadata <- msiInfo( msdata )@metadata
+
+        moleculeName <- exptMetadata$metadataTable[ , 2 ][ which( exptMetadata$metadataTable[ , 1 ] == mz ) ]
+
+        imgFile <- file.path( targetDir, paste( "plane_", mz, ".png", sep = "" ) )
+
+        png( filename = imgFile )
+
+        print( image( msdata, mz = mz, colorscale = magma, main = paste( "Molecule:", moleculeName, "\n" ) ) )
+
+        dev.off()
+    }
+}
+
+
 # Write an MSImagingExperiment object to current working dir, named to match
 # the original data file.
 write_imzml <- function( msdata ) {
