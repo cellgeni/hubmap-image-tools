@@ -141,6 +141,23 @@ write_ims_images <- function( msdata, targetDir ) {
 }
 
 
+apply_affine_transformation <- function( transformationMatrix, tiff_image, msdata ) {
+
+    # TODO: Make sure transformation matrix is correct dimensions.
+    # TODO: Do it for all images in the IMS object instead of hard coding m/z value.
+
+    ims_image <- slice( msdata, mz = 687.5453 )
+
+    transformedImage <- affine( ims_image, transformationMatrix, output.dim = c( tiff_image$coreMetadata$sizeX, tiff_image$coreMetadata$sizeY ) )
+
+    return( transformedImage )
+
+}
+
+
+
+
+
 # Write an MSImagingExperiment object to current working dir, named to match
 # the original data file.
 write_imzml <- function( msdata ) {
