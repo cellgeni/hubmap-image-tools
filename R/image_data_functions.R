@@ -4,6 +4,7 @@ suppressPackageStartupMessages( {
     library( tools )
     library( Cardinal )
     library( RBioFormats )
+    library( png )
 } )
    
 
@@ -15,8 +16,17 @@ create_msimagingexperiment_object <- function( filename, metadataFile ) {
 
     ims_full_data <- read.csv( filename, header = FALSE, stringsAsFactors = FALSE )
 
-    message( "File read successfully. Building MSImagingExperiment object..." )
+    message( "File read successfully." )
 
+    # Make sure the header only contains m/z values and not any letters.
+    # The data are provided with m/z value plus molecule name but we require
+    # that only the m/z values are present. We have a perl script to fix this.
+    if( any( grepl( "[A-Za-z]", ims_full_data[ 1,3:ncol( ims_full_data ) ] ) ) {
+        
+        stop( "Letters found in m/z-value-only column headers. Please ensure that, aside from x and y in the first two columns, the headers contain m/z values ONLY. You may need to run the script perl/fix_ims_header.pl first." )
+    
+    }
+    
     # Find x and y coordinate columns
     xcol_idx <- which( ims_full_data[ 1, ] == "x" )
     ycol_idx <- which( ims_full_data[ 1, ] == "y" )
@@ -146,16 +156,30 @@ apply_affine_transformation <- function( transformationMatrix, tiff_image, msdat
     # TODO: Make sure transformation matrix is correct dimensions.
     # TODO: Do it for all images in the IMS object instead of hard coding m/z value.
 
-    ims_image <- slice( msdata, mz = 687.5453 )
+    ims_image <- flip( slice( msdata, mz = 687.5453 ) )
+    
+    # Load EBImage package if it's not already loaded. This package provides
+    # the affine() function.
+    if( ! "package:EBImage" %in% search() ) {
+        suppressMessages( library( EBImage ) )
+    }
 
-    transformedImage <- affine( ims_image, transformationMatrix, output.dim = c( tiff_image$coreMetadata$sizeX, tiff_image$coreMetadata$sizeY ) )
+    transformedImage <- affine( 
+        ims_image, 
+        transformationMatrix, 
+        output.dim = c( tiff_image$coreMetadata$sizeX, tiff_image$coreMetadata$sizeY )
+    )
 
     return( transformedImage )
 
 }
 
 
+# Plot a matrix as an image with the correct aspect ratio.
+view_image <- function( imgMat ) {
 
+    image( imgMat, asp = dim( imgMat )[ 2 ]/dim( imgMat )[ 1 ] )
+}
 
 
 # Write an MSImagingExperiment object to current working dir, named to match
