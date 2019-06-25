@@ -151,34 +151,43 @@ write_ims_images <- function( msdata, targetDir ) {
 }
 
 
-apply_affine_transformation <- function( transformationMatrix, tiff_image, msdata ) {
+apply_affine_transformation <- function( transformationMatrixFile, maskImage, msdata ) {
 
-    # TODO: Make sure transformation matrix is correct dimensions.
-    # TODO: Do it for all images in the IMS object instead of hard coding m/z value.
-
-    ims_image <- flip( slice( msdata, mz = 687.5453 ) )
+    transformationMatrix <- matrix(
+        scan( transformationMatrixFile ),
+        nrow = 3
+    )
+    
+    if( ncol( transformationMatrix ) != 2 ) {
+        stop( 
+            paste( 
+                "Affine transformation matrix has incorrect dimensions. Please check file",
+                transformationMatrixFile
+            )
+        )
+    }
+                
+    # TODO: Do this for all images in the IMS object instead of hard coding m/z value.
     
     # Load EBImage package if it's not already loaded. This package provides
-    # the affine() function.
+    # the Image() and affine() functions.
     if( ! "package:EBImage" %in% search() ) {
         suppressMessages( library( EBImage ) )
     }
-
+        
+    # Convert the slice to an EBImage Image object.
+    imsImage <- Image( slice( msdata, mz = 687.5453 ) )
+    
+    # Run affine transform.
     transformedImage <- affine( 
-        ims_image, 
+        imsImage, 
         transformationMatrix, 
-        output.dim = c( tiff_image$coreMetadata$sizeX, tiff_image$coreMetadata$sizeY )
+        output.dim = c( dim( maskImage )[ 1 ], dim( maskImage )[ 2 ] )
     )
-
+    
+    # Return the transformed image; FIXME: this only returns one plane due to hard coded m/z value.
     return( transformedImage )
 
-}
-
-
-# Plot a matrix as an image with the correct aspect ratio.
-view_image <- function( imgMat ) {
-
-    image( imgMat, asp = dim( imgMat )[ 2 ]/dim( imgMat )[ 1 ] )
 }
 
 
