@@ -4,7 +4,6 @@ suppressPackageStartupMessages( {
     library( tools )
     library( Cardinal )
     library( RBioFormats )
-    library( png )
 } )
    
 
@@ -21,7 +20,7 @@ create_msimagingexperiment_object <- function( filename, metadataFile ) {
     # Make sure the header only contains m/z values and not any letters.
     # The data are provided with m/z value plus molecule name but we require
     # that only the m/z values are present. We have a perl script to fix this.
-    if( any( grepl( "[A-Za-z]", ims_full_data[ 1,3:ncol( ims_full_data ) ] ) ) {
+    if( any( grepl( "[A-Za-z]", ims_full_data[ 1,3:ncol( ims_full_data ) ] ) ) ) {
         
         stop( "Letters found in m/z-value-only column headers. Please ensure that, aside from x and y in the first two columns, the headers contain m/z values ONLY. You may need to run the script perl/fix_ims_header.pl first." )
     
