@@ -135,28 +135,6 @@ create_msimagingexperiment_object <- function( filename, metadataFile ) {
 }
 
 
-write_ims_images <- function( msdata, targetDir ) {
-
-    # FIXME: stopping at the first 10 images for now.
-    for( mz in mz( msdata )[ 1:10 ] ) { 
-            
-        # Get the molecule name from the metadata.
-        exptMetadata <- msiInfo( msdata )@metadata
-
-        moleculeName <- exptMetadata$metadataTable[ , 7 ][ which( exptMetadata$metadataTable[ , 1 ] == mz ) ]
-        
-        # FIXME: here using PNG images, this can be changed to any other format.
-        imgFile <- file.path( targetDir, paste( "mz_", mz, ".png", sep = "" ) )
-
-        png( filename = imgFile )
-
-        print( image( msdata, mz = mz, colorscale = magma, main = paste( "Molecule:", moleculeName, "\n" ) ) )
-
-        dev.off()
-    }
-}
-
-
 apply_affine_transformation <- function( transformationMatrixFile, maskImage, msdata ) {
 
     transformationMatrix <- matrix(
@@ -228,6 +206,28 @@ read_tiff_metadata <- function( filename ) {
     message( "TIFF metadata read successfully." )
 
     return( tiffMetadata )
+}
+
+
+write_ims_images <- function( msdata, targetDir ) {
+
+    # FIXME: stopping at the first 10 images for now.
+    for( mz in mz( msdata )[ 1:10 ] ) { 
+            
+        # Get the molecule name from the metadata.
+        exptMetadata <- msiInfo( msdata )@metadata
+
+        moleculeName <- exptMetadata$metadataTable[ , 7 ][ which( exptMetadata$metadataTable[ , 1 ] == mz ) ]
+        
+        # FIXME: here using PNG images, this can be changed to any other format.
+        imgFile <- file.path( targetDir, paste( "mz_", mz, ".png", sep = "" ) )
+
+        png( filename = imgFile )
+
+        print( image( msdata, mz = mz, colorscale = magma, main = paste( "Molecule:", moleculeName, "\n" ) ) )
+
+        dev.off()
+    }
 }
 
 
