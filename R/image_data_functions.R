@@ -67,6 +67,9 @@ create_msimagingexperiment_object <- function( filename, metadataFile ) {
     )
     
     # Replace NAs with zeros, otherwise colocalization stats don't work.
+    # FIXME: This means that we now don't know the difference between a real
+    # zero and "missing" -- instead we could just do this substitution when we
+    # need to?
     ims_full_data[ is.na( ims_full_data ) ] <- 0
 
 
