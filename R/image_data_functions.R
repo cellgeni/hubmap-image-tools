@@ -135,6 +135,48 @@ create_msimagingexperiment_object <- function( filename, metadataFile ) {
 }
 
 
+# FIXME: Currently using the "Elemental Composition" column to look up the
+# molecule input -- this would be better as the compound name or something? But
+# would require some more powerful fancy search expansion stuff.
+find_colocalized_molecules <- function( filename, metadataFile, molecule ) {
+
+    msdata <- create_msimagingexperiment_object( filename, metadataFile )
+
+    metadataTable <- msiInfo( msdata )@metadata$metadataTable
+
+    # Die here if we didn't get a metadata table.
+    if( is.null( metadataTable ) ) {
+        stop( 
+            paste( 
+                "No metadata table found. Cannot locate m/z value for",
+                molecule
+            )
+        )
+    }
+
+    mzCol <- metadataTable[ , metadataTable[ 1, ] == "Experimental m/z" ]
+
+    moleculeCol <- metadataTable[ , metadataTable[ 1, ] == "Elemental Composition " ]
+    
+    moleculeMz <- mzCol[ which( moleculeCol == molecule ) ]
+
+    # Default number of results is 10, can be changed using n= argument).
+    colocalizedFeatures <- colocalized( msdata, mz = moleculeMz )
+
+    molecules <- sapply(
+        colocalizedFeatures$mz,
+        function( mzVal ) {
+            rowNum <- which( mzCol == mzVal )
+            moleculeCol[ rowNum ]
+        }
+    )
+
+    colocalizedFeatures <- cbind( colocalizedFeatures, ElementalComposition = molecules )
+
+    return( colocalizedFeatures )
+}
+
+
 apply_affine_transformation <- function( transformationMatrixFile, maskImage, msdata ) {
 
     transformationMatrix <- matrix(
