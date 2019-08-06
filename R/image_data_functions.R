@@ -66,6 +66,10 @@ create_msimagingexperiment_object <- function( filename, metadataFile ) {
         sapply( ims_full_data, function( x ) as.numeric( x ) )
     )
     
+    # Replace NAs with zeros, otherwise colocalization stats don't work.
+    ims_full_data[ is.na( ims_full_data ) ] <- 0
+
+
     # Make sure that the x and y columns of type integer. If they are not it
     # can cause problems for writing to imzML format.
     ims_full_data$x <- as.integer( ims_full_data$x )
