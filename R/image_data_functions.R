@@ -175,6 +175,39 @@ find_colocalized_features <- function( msdata, molecule ) {
 }
 
 
+# Basic checks for file access.
+check_files <- function( fileVector ) {
+
+    for ( f in fileVector ) {
+        
+        # Check file exists.
+        if( !file.exists( f ) ) {
+            
+            stop(
+                paste(
+                    "Cannot find file:",
+                    f,
+                    "Please check it exists and is readable.",
+                    sep = "\n"
+                )
+            )
+        }
+        
+        # Check file is readable.
+        if( file.access( f, mode = 4 ) == -1 ) {
+
+            stop(
+                paste(
+                    "Cannot read file:",
+                    f,
+                    "Please ensure it is readable by the current user."
+                )
+            )
+        }
+    }
+}
+
+
 apply_affine_transformation <- function( transformationMatrixFile, maskImage, msdata ) {
 
     transformationMatrix <- matrix(
