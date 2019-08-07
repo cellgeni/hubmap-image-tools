@@ -135,12 +135,10 @@ create_msimagingexperiment_object <- function( filename, metadataFile ) {
 }
 
 
-# FIXME: Currently using the "Elemental Composition" column to look up the
+# FIXME: Currently using the "Elemental Composition " column to look up the
 # molecule input -- this would be better as the compound name or something? But
 # would require some more powerful fancy search expansion stuff.
-find_colocalized_molecules <- function( filename, metadataFile, molecule ) {
-
-    msdata <- create_msimagingexperiment_object( filename, metadataFile )
+find_colocalized_features <- function( msdata, molecule ) {
 
     metadataTable <- msiInfo( msdata )@metadata$metadataTable
 
