@@ -12,10 +12,13 @@ process run_starfish_dartfish {
 
     output:
         file "*.txt" into starfish_dartfish_results
+        stdout starfish_dartfish_stdout
 
     """
-    python3 $HUBMAP_IMAGE_TOOLS/python/starfish/dartfish.py -o ${outfile} 
+    python3 $HUBMAP_IMAGE_TOOLS/python/starfish/dartfish.py -o ${outfile} 2>&1
     """
 }
 
-
+starfish_dartfish_stdout.subscribe {
+    println it.trim()
+}
