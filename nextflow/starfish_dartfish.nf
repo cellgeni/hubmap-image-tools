@@ -11,14 +11,11 @@ process run_starfish_dartfish {
         val outfile from dartfish_results_files_in
 
     output:
-        stdout starfish_dartfish_stdout
+        file "*.txt" into starfish_dartfish_results
 
     """
-    python3 $HUBMAP_IMAGE_TOOLS/python/starfish/dartfish.py -o ${outfile}
+    python3 $HUBMAP_IMAGE_TOOLS/python/starfish/dartfish.py -o ${outfile} 
     """
 }
 
-starfish_dartfish_stdout.subscribe {
-    println it.trim()
-}
 
