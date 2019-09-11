@@ -21,18 +21,18 @@ process run_starfish_dartfish {
 }
 
 
-process run_starfish_seqfish {
-
-    publishDir = "$PWD"
-
-    input: 
-        val outfile from seqfish_results_file_in
-
-    output:
-        file "*.txt" into starfish_seqfish_results
-    
-    """
-    python3 $HUBMAP_IMAGE_TOOLS/python/starfish/seqfish.py -o ${outfile}
-    """
-}
+//process run_starfish_seqfish {
+//
+//    publishDir = "$PWD"
+//
+//    input: 
+//        val outfile from seqfish_results_file_in
+//
+//    output:
+//        file "*.txt" into starfish_seqfish_results
+//    
+//    """
+//    python3 $HUBMAP_IMAGE_TOOLS/python/starfish/seqfish.py -o ${outfile}
+//    """
+//}
 
