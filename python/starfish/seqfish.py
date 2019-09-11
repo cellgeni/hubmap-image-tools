@@ -80,5 +80,15 @@ psd = starfish.spots.DetectPixels.PixelSpotDecoder(
 )
 pixel_decoded, ccdr = psd.run( blurred )
 
+# Create a data frame of the spot intensities.
 spots_df = pixel_decoded.to_features_dataframe()
+
+# Add a column with the area of the spot.
+spots_df['area'] = np.pi*spots_df['radius']**2
+
+# This step limits results to only those that pass thresholds. However in this
+# dataset this would only be two rows, so have left it commented out for now.
+#spots_df = spots_df.loc[spots_df[Features.PASSES_THRESHOLDS]]
+
+# Write it out to a file.
 spots_df.to_csv( args[ 'outfile' ], index=None, sep='\t' )

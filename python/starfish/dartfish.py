@@ -96,8 +96,12 @@ initial_spot_intensities, results = psd.run( filtered_imgs )
 
 # Create a data frame of initial spot intensities.
 spots_df = initial_spot_intensities.to_features_dataframe()
+
+# Add a column with the area of the spot.
 spots_df['area'] = np.pi*spots_df['radius']**2
-spots_df = spots_df.loc[spots_df[Features.PASSES_THRESHOLDS]]
+
+# This step limits results to only those that pass thresholds.
+#spots_df = spots_df.loc[spots_df[Features.PASSES_THRESHOLDS]]
 
 # Write it out to a file.
 spots_df.to_csv( args[ 'outfile' ], index=None, sep='\t' )
