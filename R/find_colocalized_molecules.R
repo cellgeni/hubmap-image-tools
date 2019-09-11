@@ -2,7 +2,7 @@
 
 # Source required functions.
 functionsFile <- file.path(
-    Sys.getenv( "HUBMAP_GIT" ),
+    Sys.getenv( "HUBMAP_IMAGE_TOOLS" ),
     "R",
     "image_data_functions.R"
 )
@@ -30,21 +30,3 @@ colocalizedFeatures <- find_colocalized_features( msdata, molecule )
 print( colocalizedFeatures )
 
 
-
-
-check_files <- function( fileVector ) {
-
-    for ( f in fileVector ) {
-        
-        if( !file.exists( f ) ) {
-            
-            stop(
-                paste(
-                    "Cannot find",
-                    f,
-                    " -- please check it exists and is readable."
-                )
-            )
-        }
-    }
-}
