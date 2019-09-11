@@ -34,7 +34,7 @@ logging.basicConfig(
     format = '%(levelname)s - %(message)s'
 )
 
-logging.info( "Output file name " + args[ "outfile" ] )
+logging.info( "Output file name: " + args[ "outfile" ] )
 
 # Load DARTFISHv1 2017 example data from the cloud.
 # The data represent human brain tissue from the human occipital cortex from

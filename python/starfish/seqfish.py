@@ -28,7 +28,7 @@ logging.basicConfig(
     format = '%(levelname)s - %(message)s'
 )
 
-logging.info( "Output file name " + args[ "outfile" ] )
+logging.info( "Output file name: " + args[ "outfile" ] )
 
 logging.info( "Loading test data from cloud..." )
 
@@ -73,7 +73,7 @@ logging.info( "Scaling complete." )
 # The background is fairly uniformly present below intensity=0.5. However,
 # starfish's clip method only supports percentiles. To solve this problem, the
 # intensities can be directly edited in the underlying numpy array.
-logging.info( "Removing residual backgroun from images..." )
+logging.info( "Removing residual background from images..." )
 
 clipped = deepcopy( scaled )
 clipped.xarray.values[ clipped.xarray.values < 0.7 ] = 0
