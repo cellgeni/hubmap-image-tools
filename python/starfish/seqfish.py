@@ -9,16 +9,9 @@ from copy import deepcopy
 import numpy as np
 import pandas as pd
 
-import skimage.filters
-#from skimage.morphology import opening, dilation, disk
-from skimage.transform import SimilarityTransform, warp
-
-from functools import partial
-
 import starfish
 import starfish.data
-from starfish.spots import DetectSpots
-from starfish.types import Features
+#from starfish.types import Features
 
 ap = argparse.ArgumentParser()
 ap.add_argument( 
