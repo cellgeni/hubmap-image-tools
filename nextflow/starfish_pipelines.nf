@@ -1,8 +1,8 @@
 #!/usr/bin/env nextflow
 
 // Output filename(s) FIXME: put these in a config file.
-dartfish_results_file_in = Channel.from( "starfish_dartfish_results.txt" )
-seqfish_results_file_in = Channel.from( "starfish_seqfish_results.txt" )
+dartfish_results_file_in = Channel.fromPath( dartfishOutfile )
+seqfish_results_file_in = Channel.fromPath( seqfishOutfile )
 
 process run_starfish_dartfish {
 
