@@ -2,6 +2,8 @@
 
 # Adapted from https://github.com/spacetx/starfish/blob/master/notebooks/SeqFISH.ipynb
 
+import argparse
+
 import os
 from copy import deepcopy
 import numpy as np
@@ -17,6 +19,15 @@ import starfish
 import starfish.data
 from starfish.spots import DetectSpots
 from starfish.types import Features
+
+ap = argparse.ArgumentParser()
+ap.add_argument( 
+    "-o", 
+    "--outfile", 
+    required = True, 
+    help = "Path to output file"
+)
+args = vars( ap.parse_args() )
 
 # Select seqFISH data for a single field of view.
 exp = starfish.data.SeqFISH( use_test_data=True )
