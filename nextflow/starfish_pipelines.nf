@@ -1,6 +1,10 @@
 #!/usr/bin/env nextflow
 
-// Output filename(s) FIXME: put these in a config file.
+// Output filename(s) from config file
+// (hubmap-image-tools/nextflow/starfish_nextflow.config ; copy to working dir
+// and rename to nextflow.config).
+// FIXME: Final pipeline should have input file(s) instead of output files but
+// for now we are using Starfish example data to test with.
 dartfish_results_file_in = Channel.from( params.dartfishOutfile )
 seqfish_results_file_in = Channel.from( params.seqfishOutfile )
 
