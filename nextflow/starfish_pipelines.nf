@@ -1,8 +1,8 @@
 #!/usr/bin/env nextflow
 
 // Output filename(s) FIXME: put these in a config file.
-dartfish_results_file_in = Channel.fromPath( params.dartfishOutfile )
-//seqfish_results_file_in = Channel.fromPath( params.seqfishOutfile )
+dartfish_results_file_in = Channel.from( params.dartfishOutfile )
+//seqfish_results_file_in = Channel.from( params.seqfishOutfile )
 
 process run_starfish_dartfish {
 
@@ -13,7 +13,6 @@ process run_starfish_dartfish {
 
     output:
         file "*.txt" into starfish_dartfish_results
-        stdout starfish_dartfish_stdout
 
     """
     python3 $HUBMAP_IMAGE_TOOLS/python/starfish/dartfish.py -o ${outfile}
