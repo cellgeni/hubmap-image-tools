@@ -8,6 +8,7 @@
 # Using parameter values decided in the above notebook.
 
 import argparse
+import logging
 
 import pandas as pd
 import numpy as np
@@ -28,30 +29,48 @@ ap.add_argument(
 )
 args = vars( ap.parse_args() )
 
+logging.basicConfig(
+    level = logging.INFO,
+    format = '%(levelname)s - %(message)s'
+)
+
+logging.info( "Output file name " + args[ "outfile" ] )
+
 # Load DARTFISHv1 2017 example data from the cloud.
 # The data represent human brain tissue from the human occipital cortex from
 # one field of view (FOV) of a larger experiment. The data from one FOV
 # correspond to 18 images from six imaging rounds (r), three colour channels
 # (c), and one z-plane (z). Each image is 988x988 pixels.
+logging.info( "Loading test data from cloud..." )
+
 use_test_data = os.getenv( "USE_TEST_DATA" ) is not None
 experiment = data.DARTFISH( use_test_data=use_test_data )
-
 imgs = experiment.fov().get_image(FieldOfView.PRIMARY_IMAGES)
 
-# Filter and scale raw data before decoding into spatially resolved gene expression.
+logging.info( "Test data loaded." )
+
+# Scale and filter raw data before decoding into spatially resolved gene expression.
 # First, we bring the intensities of all the images into the same scale as one
 # another, by scaling each image by its maximum intensity. This is equivalent
 # to scaling by the 100th percentile value of the pixel values in each image.
+logging.info( "Scaling data by 100th percentile of pixel values..." )
+
 sc_filt = Filter.Clip( p_max=100, expand_dynamic_range=True )
 norm_imgs = sc_filt.run( imgs )
+
+logging.info( "Scaling complete." )
 
 # Next, for each imaging round and each pixel location, we zero the intensity
 # values across all three colour channels, if the magnitude of this vector of
 # colour channels is below a certain threshold (here 0.05). The code value
 # associated with these pixels will be blank. This is necessary to support
 # euclidean decoding for codebooks that include blank values.
+logging.info( "Filtering out pixels where magnitude of colour channels vector is < 0.05..." )
+
 z_filt = Filter.ZeroByChannelMagnitude( thresh=.05, normalize=False )
 filtered_imgs = z_filt.run( norm_imgs )
+
+logging.info( "Filtering complete." )
 
 # Decode the processed data into spatially resolved gene expression profiles.
 # Here, Starfish decodes each pixel value, across all rounds and channels, into
@@ -91,8 +110,12 @@ psd = DetectPixels.PixelSpotDecoder(
     max_area=area_threshold[1]
 )
 
+logging.info( "Detecting pixels using PixelSpotDetector..." )
+
 # Run detection.
 initial_spot_intensities, results = psd.run( filtered_imgs )
+
+logging.info( "Pixel detection complete." )
 
 # Create a data frame of initial spot intensities.
 spots_df = initial_spot_intensities.to_features_dataframe()
