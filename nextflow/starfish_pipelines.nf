@@ -17,13 +17,8 @@ def jsonSlurper = new JsonSlurper()
 String inputFilesJSON = inputFileList.text
 def inputFiles = jsonSlurper.parseText( inputFilesJSON )
 
-if( inputFiles.dartfish_outfiles ) {
-    dartfish_results_file_in = Channel.from( inputFiles.dartfish_outfiles )
-}
-
-if( inputFiles.seqfish_outfiles ) {
-    seqfish_results_file_in = Channel.from( inputFiles.seqfish_outfiles )
-}
+dartfish_results_file_in = Channel.from( inputFiles.dartfish_outfiles )
+seqfish_results_file_in = Channel.from( inputFiles.seqfish_outfiles )
 
 process run_starfish_dartfish {
 
@@ -34,6 +29,9 @@ process run_starfish_dartfish {
 
     output:
         file "*.txt" into starfish_dartfish_results
+
+    when:
+        inputFiles.dartfish_outfiles
 
     """
     python3 $HUBMAP_IMAGE_TOOLS/python/starfish/dartfish.py -o ${outfile}
@@ -50,6 +48,9 @@ process run_starfish_seqfish {
 
     output:
         file "*.txt" into starfish_seqfish_results
+    
+    when:
+        inputFiles.seqfish_outfiles
     
     """
     python3 $HUBMAP_IMAGE_TOOLS/python/starfish/seqfish.py -o ${outfile}
