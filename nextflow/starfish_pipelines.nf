@@ -1,18 +1,14 @@
 #!/usr/bin/env nextflow
 
-def inputFileList = new File( "starfish_input_files.json" )
-
-// Output filename(s) from config file
+// Output filename(s) from JSON config file.
 // (hubmap-image-tools/nextflow/starfish_nextflow.config ; copy to working dir
 // and rename to nextflow.config).
 // FIXME: Final pipeline should have input file(s) instead of output files but
 // for now we are using Starfish example data to test with.
-//dartfish_results_file_in = Channel.from( params.dartfishOutfile )
-//seqfish_results_file_in = Channel.from( params.seqfishOutfile )
-
-// Try and do this with a JSON config instead.
 import groovy.json.JsonSlurper
 def jsonSlurper = new JsonSlurper()
+
+def inputFileList = new File( "starfish_input_files.json" )
 
 String inputFilesJSON = inputFileList.text
 def inputFiles = jsonSlurper.parseText( inputFilesJSON )
