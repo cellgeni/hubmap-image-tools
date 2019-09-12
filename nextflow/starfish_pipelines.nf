@@ -1,8 +1,8 @@
 #!/usr/bin/env nextflow
 
 // Output filename(s) from JSON config file.
-// (hubmap-image-tools/nextflow/starfish_nextflow.config ; copy to working dir
-// and rename to nextflow.config).
+// (hubmap-image-tools/nextflow/starfish_input_files.json ; copy to working dir
+// and update with desired file(s)).
 // FIXME: Final pipeline should have input file(s) instead of output files but
 // for now we are using Starfish example data to test with.
 import groovy.json.JsonSlurper
