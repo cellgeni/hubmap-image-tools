@@ -17,8 +17,13 @@ def jsonSlurper = new JsonSlurper()
 String inputFilesJSON = inputFileList.text
 def inputFiles = jsonSlurper.parseText( inputFilesJSON )
 
-dartfish_results_file_in = Channel.from( inputFiles.dartfish_outfiles )
-seqfish_results_file_in = Channel.from( inputFiles.seqfish_outfiles )
+if( inputFiles.dartfish_outfiles ) {
+    dartfish_results_file_in = Channel.from( inputFiles.dartfish_outfiles )
+}
+
+if( inputFiles.seqfish_outfiles ) {
+    seqfish_results_file_in = Channel.from( inputFiles.seqfish_outfiles )
+}
 
 process run_starfish_dartfish {
 
