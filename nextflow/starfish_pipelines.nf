@@ -17,16 +17,23 @@ def jsonSlurper = new JsonSlurper()
 String inputFilesJSON = inputFileList.text
 def inputFiles = jsonSlurper.parseText( inputFilesJSON )
 
+dartfish_results_file_in = Channel.from( inputFiles.dartfish_outfiles )
+seqfish_results_file_in = Channel.from( inputFiles.seqfish_outfiles )
 
-def dartfish_results_file_in, seqfish_results_file_in
 
-if( inputFiles.dartfish_outfiles ) {
-    dartfish_results_file_in = Channel.from( inputFiles.dartfish_outfiles )
+process handle_empty_channels {
+
+    input:
+        val x from seqfish_results_file_in.ifEmpty { 'EMPTY' }
+    
+    when:
+        x == 'EMPTY'
+
+    """
+    echo "No seqFISH files to process"
+    """
 }
 
-if( inputFiles.seqfish_outfiles ) {
-    seqfish_results_file_in = Channel.from( inputFiles.seqfish_outfiles )
-}
 
 process run_starfish_dartfish {
 
