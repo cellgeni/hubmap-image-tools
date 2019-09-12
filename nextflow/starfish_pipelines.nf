@@ -24,12 +24,14 @@ if( dartfishOutfiles ) {
     dartfish_results_file_in = Channel.from( inputFiles.dartfish_outfiles )
 } else {
     dartfish_results_file_in = Channel.from( "NOFILES" )
+    println "No DARTFISH files to process."
 }
 
 if( seqfishOutfiles ) {
     seqfish_results_file_in = Channel.from( inputFiles.seqfish_outfiles )
 } else {
     seqfish_results_file_in = Channel.from( "NOFILES" )
+    println "Np seqFISH files to process."
 }
 
 
