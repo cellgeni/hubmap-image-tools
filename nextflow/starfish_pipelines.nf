@@ -21,17 +21,31 @@ List dartfishOutfiles = inputFiles.dartfish_outfiles
 List seqfishOutfiles = inputFiles.seqfish_outfiles
 
 if( dartfishOutfiles ) {
+    
+    numFiles = dartfishOutfiles.size()
+    println "Found $numFiles DARTFISH files to process."
+    
     dartfish_results_file_in = Channel.from( inputFiles.dartfish_outfiles )
+
 } else {
+
     dartfish_results_file_in = Channel.from( "NOFILES" )
+    
     println "No DARTFISH files to process."
 }
 
 if( seqfishOutfiles ) {
+    
+    numFiles = seqfishOutfiles.size()
+    println "Found $numFiles seqFISH files to process."
+    
     seqfish_results_file_in = Channel.from( inputFiles.seqfish_outfiles )
+
 } else {
+    
     seqfish_results_file_in = Channel.from( "NOFILES" )
-    println "Np seqFISH files to process."
+    
+    println "No seqFISH files to process."
 }
 
 
