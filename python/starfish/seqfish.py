@@ -12,7 +12,6 @@ import pandas as pd
 
 import starfish
 import starfish.data
-#from starfish.types import Features
 
 ap = argparse.ArgumentParser()
 ap.add_argument( 
