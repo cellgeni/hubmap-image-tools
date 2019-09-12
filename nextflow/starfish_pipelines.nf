@@ -23,7 +23,7 @@ List seqfishOutfiles = inputFiles.seqfish_outfiles
 if( dartfishOutfiles ) {
     
     numFiles = dartfishOutfiles.size()
-    println "Found $numFiles DARTFISH files to process."
+    println "Found $numFiles DARTFISH file(s) to process."
     
     dartfish_results_file_in = Channel.from( inputFiles.dartfish_outfiles )
 
@@ -37,7 +37,7 @@ if( dartfishOutfiles ) {
 if( seqfishOutfiles ) {
     
     numFiles = seqfishOutfiles.size()
-    println "Found $numFiles seqFISH files to process."
+    println "Found $numFiles seqFISH file(s) to process."
     
     seqfish_results_file_in = Channel.from( inputFiles.seqfish_outfiles )
 
