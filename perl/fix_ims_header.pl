@@ -56,7 +56,7 @@ while( my $line = <$inFH> ) {
             # "m/z 616.4711_CerP(d34:1)-H"
             # The "616.4711" is the m/z value; the section after the "_" is the
             # molecule name.
-            ( my $newColHeader = $colHeader ) =~ s/^m\/z (\d+\.\d+)_.*$/$1/;
+            ( my $newColHeader = $colHeader ) =~ s/^m\/?z ?_?(\d+\.\d+).*$/$1/;
             
             push @newColHeaders, $newColHeader;
         }
