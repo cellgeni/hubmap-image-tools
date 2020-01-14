@@ -4,6 +4,21 @@ import argparse
 import json
 import sys
 
+# collect_attribute()
+# Returns the contents of the field matching the name(s) passed in the
+# fieldNames argument.
+# Field names are passed in a list because sometimes there is more than one
+# possible name for the field. For example, in some files, the date field is
+# called "date" and in others it is called "dateProcessed".
+# The order the field names are passed in this list matters, because only the
+# first one to match is returned.
+# In some cases, the JSON file contains both versions of the field name, but
+# only one of them has valid content. For example, some files have:
+#   - "aperture": 0.75
+#   - "numerical_aperture": 0.0
+# So in this case we would only want the contents of the "aperture" field.
+# In other cases, the "aperture" field doesn't exist, and only the
+# "numerical_aperture" field is present, with valid content.
 def collect_attribute( fieldNames, jsonObject ):
     for fieldName in fieldNames:
         if fieldName in jsonObject:
@@ -50,7 +65,10 @@ def main():
 
     # Empty dictionary to store Cytokit config.
     cytokitConfigDict = {}
-
+    
+    # Collect some values for the config. Sometimes we have to pass multiple
+    # possible options (see comments above collect_attribute() function
+    # definition).
     cytokitConfigDict[ "name" ] = collect_attribute( [ "name" ], jsonObject )
     cytokitConfigDict[ "date" ] = collect_attribute( [ "date", "dateProcessed" ], jsonObject )
     cytokitConfigDict[ "emission_wavelengths" ] = collect_attribute( [ "emission_wavelengths", "wavelengths" ], jsonObject )
