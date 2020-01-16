@@ -8,7 +8,10 @@ import re
 import sys
 import yaml
 
-logging.basicConfig(level=logging.DEBUG, format='%(message)s')
+logging.basicConfig( 
+    level=logging.INFO, 
+    format='%(levelname)-7s - %(message)s'
+)
 logger = logging.getLogger(__name__)
 
 # collect_attribute()
@@ -38,7 +41,7 @@ def collect_attribute( fieldNames, jsonObject ) :
     logger.error( "No match found for field name(s) in JSON file: %s" % fieldNameString )
     sys.exit()
 
-# infer_nuclei_channel
+# infer_nuclei_channel()
 # Try to infer the name of the channel used as the nucleus marker. This is done
 # in a very naive way, based on two assumptions:
 #   1: The nucleus channel is probably "channel 1" in each cycle.
@@ -88,7 +91,7 @@ def infer_nuclei_channel( channelNames, numCycles ) :
         sys.exit()
 
 
-# calculate_target_shape
+# calculate_target_shape()
 # Cytokit's nuclei detection U-Net (from CellProfiler) works best at 20x magnification.
 # The CellProfiler U-Net requires the height and width of the images to be
 # evenly divisible by 2 raised to the number of layers in the network, in this case 2^3=8.
@@ -114,7 +117,7 @@ def calculate_target_shape( magnification, tileHeight, tileWidth ) :
     return [ dims[ "height" ], dims[ "width" ] ]
 
 
-# main
+# main()
 def main() :
     # Set up argument parser and parse the command line arguments.
     parser = argparse.ArgumentParser( 
