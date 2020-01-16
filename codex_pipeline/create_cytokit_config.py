@@ -169,7 +169,7 @@ def main() :
     
     logger.info( "Populating acquisition section..." )
 
-    cytokitConfigAcquisition[ "emission_wavelengths" ] = collect_attribute( [ "emsion_wavelengths", "wavelengths" ], jsonObject )
+    cytokitConfigAcquisition[ "emission_wavelengths" ] = collect_attribute( [ "emission_wavelengths", "wavelengths" ], jsonObject )
     cytokitConfigAcquisition[ "axial_resolution" ] = collect_attribute( [ "zPitch", "z_pitch" ], jsonObject )
     cytokitConfigAcquisition[ "lateral_resolution" ] = collect_attribute( [ "xyResolution", "per_pixel_XY_resolution" ], jsonObject )
     cytokitConfigAcquisition[ "magnification" ] = collect_attribute( [ "magnification" ], jsonObject )
