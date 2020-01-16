@@ -46,7 +46,7 @@ def collect_attribute( fieldNames, jsonObject ) :
 # in a very naive way, based on two assumptions:
 #   1: The nucleus channel is probably "channel 1" in each cycle.
 #   2: The nucleus channel is either called "DAPI" or "HOECHST".
-def infer_nuclei_channel( channelNames, numCycles ) :
+def infer_nuclei_channel( channelNames, channelsPerCycle ) :
     
     nucleiMarkers = {
         "dapi" : 1,
@@ -55,40 +55,69 @@ def infer_nuclei_channel( channelNames, numCycles ) :
 
     totalAssays = len( channelNames )
 
-    if totalAssays % numCycles :
-        logger.error( "Total number of assays does not produce a whole number when divided by number of cycles." )
+    if totalAssays % channelsPerCycle :
+        logger.error( "Total number of assays does not produce a whole number when divided by number of channels per cycle." )
+        
+        print( channelNames )
+
+        print( "Number of assays: " + str( totalAssays ) )
+
+        print( "Number of channels per cycle: " + str( numCycles ) )
+
         sys.exit()
 
-    channelsPerCycle = int( totalAssays / numCycles )
-
-    # Collect the names of the first channel in each cycle, in a dictionary.
-    firstChannelNames = {}
+    numCycles = int( totalAssays / channelsPerCycle )
+    
+        
+    # TODO: need to check whether marker has extra numbers at the end to denote cycle number.
+    
+    nucleiChannelNames = {}
     cycleIndex, channelIndex = 0, 0
     while cycleIndex < numCycles :
-        firstChannelNames[ channelNames[ channelIndex ] ] = 1
-        cycleIndex += 1
-        channelIndex += channelsPerCycle
+
+        channelName = channelNames[ channelIndex ]
+
+        # Check if it matches a known marker.
+        for marker in nucleiMarkers :
+            pattern = re.compile( "^" + marker + "$" )
+            match = pattern.match( channelName )
+            if match :
+                nucleiChannelNames[ channelName ] = 1
+            else :
+                patternWithIdx = re.compile( "^" + marker + "\d+$" )
+                matchWithIdx = patternWithIdx.match( channelName )
+
+
+    # Collect the names of the first channel in each cycle, in a dictionary.
+    #while cycleIndex < numCycles :
+        
+    #    channelName = channelNames[ channelIndex ]
+
+
+    #    firstChannelNames[ channelName ] = 1
+    #    cycleIndex += 1
+    #    channelIndex += channelsPerCycle
 
     # So far, the first channel is always the same, and is always the nucleus channel.
-    if len( firstChannelNames ) is 1 :
-        firstChannel = next(iter(firstChannelNames.keys()))
-        pattern = re.compile( "^" + firstChannel + "$", re.IGNORECASE )
-        for marker in nucleiMarkers:
-            match = pattern.match( marker )
-            if match :
-                return firstChannel
-        
-        # If we haven't returned, then the channel name didn't match any of the
-        # known nuclei markers, so we have to fail for now.
-        logger.error( firstChannel + " is not a known nuclei marker. Add it to the list if it should be and try again." )
-        sys.exit()
-    
-    else :
-        # If we had more than one marker in channel position "1" when looking
-        # at all the cycles, we can't currently decide which one to use, so we
-        # have to fail for now.
-        logger.error( "More than one marker used in \"channel 1\", don't know where to look for nuclei marker.")
-        sys.exit()
+    #if len( firstChannelNames ) is 1 :
+    #    firstChannel = next(iter(firstChannelNames.keys()))
+    #    pattern = re.compile( "^" + firstChannel + "$", re.IGNORECASE )
+    #    for marker in nucleiMarkers:
+    #        match = pattern.match( marker )
+    #        if match :
+    #            return firstChannel
+    #    
+    #    # If we haven't returned, then the channel name didn't match any of the
+    #    # known nuclei markers, so we have to fail for now.
+    #    logger.error( firstChannel + " is not a known nuclei marker. Add it to the list if it should be and try again." )
+    #    sys.exit()
+    #
+    #else :
+    #    # If we had more than one marker in channel position "1" when looking
+    #    # at all the cycles, we can't currently decide which one to use, so we
+    #    # have to fail for now.
+    #    logger.error( "More than one marker used in \"channel 1\", don't know where to look for nuclei marker.")
+    #    sys.exit()
 
 
 # calculate_target_shape()
@@ -173,7 +202,6 @@ def main() :
     cytokitConfigAcquisition[ "axial_resolution" ] = collect_attribute( [ "zPitch", "z_pitch" ], jsonObject )
     cytokitConfigAcquisition[ "lateral_resolution" ] = collect_attribute( [ "xyResolution", "per_pixel_XY_resolution" ], jsonObject )
     cytokitConfigAcquisition[ "magnification" ] = collect_attribute( [ "magnification" ], jsonObject )
-    cytokitConfigAcquisition[ "num_cycles" ] = collect_attribute( [ "num_cycles" ], jsonObject )
     cytokitConfigAcquisition[ "num_z_planes" ] = collect_attribute( [ "num_z_planes" ], jsonObject )
     cytokitConfigAcquisition[ "numerical_aperture" ] = collect_attribute( [ "aperture", "numerical_aperture" ], jsonObject )
     cytokitConfigAcquisition[ "objective_type" ] = collect_attribute( [ "objectiveType" ], jsonObject )
@@ -186,11 +214,12 @@ def main() :
     cytokitConfigAcquisition[ "tile_overlap_y" ] = collect_attribute( [ "tile_overlap_Y" ], jsonObject )
     cytokitConfigAcquisition[ "tiling_mode" ] = collect_attribute( [ "tiling_mode" ], jsonObject )
     cytokitConfigAcquisition[ "per_cycle_channel_names" ] = collect_attribute( [ "channel_names" ], jsonObject )
+    cytokitConfigAcquisition[ "num_cycles" ] = len( cytokitConfigAcquisition[ "per_cycle_channel_names" ] )
     
     if args.channel_names :
         with open( args.channel_names, 'r' ) as channelNamesFile :
-            channelNames = channelNamesFile.read().splitLines()
-        cytokitConfigAquisition[ "channel_names" ] = channelNames
+            channelNames = channelNamesFile.read().splitlines()
+        cytokitConfigAcquisition[ "channel_names" ] = channelNames
     else :
         if "channelNames" in jsonObject :
             cytokitConfigAcquisition[ "channel_names" ] = collect_attribute( [ "channelNamesArray" ], jsonObject[ "channelNames" ] )
