@@ -275,11 +275,13 @@ def main() :
     cytokitConfigMain[ "processor" ] = cytokitConfigProcessor
         
     # Add analysis section.
-    cytokitConfigMain[ "analysis" ] = {
-        "aggregate_cytometry_statistics" : {
-            "mode" : "best_z_plane"
+    cytokitConfigMain[ "analysis" ] = [
+        { 
+            "aggregate_cytometry_statistics" : {
+                "mode" : "best_z_plane"
+            }
         }
-    }
+    ]
     
     logger.info( "Writing Cytokit config to " + args.outfile )
 
@@ -287,31 +289,11 @@ def main() :
         yaml.safe_dump( 
             cytokitConfigMain, 
             outFile,
-            encoding = "utf-8"
+            encoding = "utf-8",
+            default_flow_style = None,
+            indent = 2
         )
 
 if __name__ == "__main__":
     main()
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
