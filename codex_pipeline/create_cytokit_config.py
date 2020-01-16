@@ -2,9 +2,14 @@
 
 import argparse
 import json
-import sys
+import logging
+import math
 import re
+import sys
 import yaml
+
+logging.basicConfig(level=logging.DEBUG, format='%(message)s')
+logger = logging.getLogger(__name__)
 
 # collect_attribute()
 # Returns the contents of the field matching the name(s) passed in the
@@ -30,8 +35,8 @@ def collect_attribute( fieldNames, jsonObject ) :
     # If we're still here, it means we tried all the possible field names and
     # didn't find a match in the JSON, so we have to fail.
     fieldNameString = ", ".join( fieldNames )
-    sys.exit( "ERROR - No match found for field name(s) in JSON file: %s" % fieldNameString )
-
+    logger.error( "No match found for field name(s) in JSON file: %s" % fieldNameString )
+    sys.exit()
 
 # infer_nuclei_channel
 # Try to infer the name of the channel used as the nucleus marker. This is done
@@ -48,7 +53,8 @@ def infer_nuclei_channel( channelNames, numCycles ) :
     totalAssays = len( channelNames )
 
     if totalAssays % numCycles :
-        sys.exit( "ERROR - total number of assays does not produce a whole number when divided by number of cycles." )
+        logger.error( "Total number of assays does not produce a whole number when divided by number of cycles." )
+        sys.exit()
 
     channelsPerCycle = int( totalAssays / numCycles )
 
@@ -71,16 +77,45 @@ def infer_nuclei_channel( channelNames, numCycles ) :
         
         # If we haven't returned, then the channel name didn't match any of the
         # known nuclei markers, so we have to fail for now.
-        sys.exit( "ERROR - " + firstChannel + " is not a known nuclei marker. Add it to the list if it should be and try again." )
+        logger.error( firstChannel + " is not a known nuclei marker. Add it to the list if it should be and try again." )
+        sys.exit()
     
     else :
         # If we had more than one marker in channel position "1" when looking
         # at all the cycles, we can't currently decide which one to use, so we
         # have to fail for now.
-        sys.exit( "ERROR - More than one marker used in \"channel 1\", don't know where to look for nuclei marker.")
+        logger.error( "More than one marker used in \"channel 1\", don't know where to look for nuclei marker.")
+        sys.exit()
+
+
+# calculate_target_shape
+# Cytokit's nuclei detection U-Net (from CellProfiler) works best at 20x magnification.
+# The CellProfiler U-Net requires the height and width of the images to be
+# evenly divisible by 2 raised to the number of layers in the network, in this case 2^3=8.
+# https://github.com/hammerlab/cytokit/issues/14
+# https://github.com/CellProfiler/CellProfiler-plugins/issues/65
+def calculate_target_shape( magnification, tileHeight, tileWidth ) :
+    scaleFactor = 1
+    if magnification is not 20 :
+        scaleFactor = 20 / magnification
+
+    dims = { 
+        "height" : tileHeight, 
+        "width" : tileWidth
+    }
+    
+    # Width and height must be evenly divisible by 8, so we round them up to them
+    # closest factor of 8 if they aren't.
+    for dimension in dims:
+        if dims[ dimension ] % 8 :
+            newDim = int( 8 * math.ceil( float( dims[ dimension ] )/8 ) )
+            dims[ dimension ] = newDim
+    
+    return [ dims[ "height" ], dims[ "width" ] ]
+
 
 # main
-def main():
+def main() :
     # Set up argument parser and parse the command line arguments.
     parser = argparse.ArgumentParser( 
         description = "Create a YAML config file for Cytokit, based on a JSON file from the CODEX Toolkit pipeline. YAML file will be created in current working directory unless otherwise specified."
@@ -95,23 +130,26 @@ def main():
         help = "path to text file containing list of channel names."
     )
     parser.add_argument(
-        "-d",
-        "--dir",
-        help = "path to directory to write Cytokit YAML config."
+        "-o",
+        "--outfile",
+        help = "path to YAML output file."
     )
-    args = parser.parse_args()
 
-    if args.dir :
-        print( "Will write YAML config to " + args.dir )
+    args = parser.parse_args()
+    
+    if not args.outfile :
+        args.outfile = "TEST_experiment.yaml"
+
+    logger.info( "Output filename: " + args.outfile )
 
     if not args.channel_names :
-        print( "No channel names file passed. Will look for channel names in JSON config." )
+        logger.info( "No channel names file passed. Will look for channel names in JSON config." )
 
-    print( "Reading config from " + args.jsonFileName + "..." )
+    logger.info( "Reading config from " + args.jsonFileName + "..." )
     # Open the JSON config.
     with open( args.jsonFileName, 'r' ) as jsonFile:
         jsonData = jsonFile.read()
-    print( "Read file." )
+    logger.info( "Read file " + args.jsonFileName )
 
     # Create dictionary from JSON config.
     jsonObject = json.loads( jsonData )
@@ -125,8 +163,10 @@ def main():
     # definition).
     cytokitConfigMain[ "name" ] = collect_attribute( [ "name" ], jsonObject )
     cytokitConfigMain[ "date" ] = collect_attribute( [ "date", "dateProcessed" ], jsonObject )
+    
+    logger.info( "Populating acquisition section..." )
 
-    cytokitConfigAcquisition[ "emission_wavelengths" ] = collect_attribute( [ "emission_wavelengths", "wavelengths" ], jsonObject )
+    cytokitConfigAcquisition[ "emission_wavelengths" ] = collect_attribute( [ "emsion_wavelengths", "wavelengths" ], jsonObject )
     cytokitConfigAcquisition[ "axial_resolution" ] = collect_attribute( [ "zPitch", "z_pitch" ], jsonObject )
     cytokitConfigAcquisition[ "lateral_resolution" ] = collect_attribute( [ "xyResolution", "per_pixel_XY_resolution" ], jsonObject )
     cytokitConfigAcquisition[ "magnification" ] = collect_attribute( [ "magnification" ], jsonObject )
@@ -152,8 +192,11 @@ def main():
         if "channelNames" in jsonObject :
             cytokitConfigAcquisition[ "channel_names" ] = collect_attribute( [ "channelNamesArray" ], jsonObject[ "channelNames" ] )
         else :
-            sys.exit( "ERROR - Cannot find data for channel_names field." )
-
+            logger.error( "Cannot find data for channel_names field." )
+            sys.exit()
+    
+    logger.info( "Acquisition section complete." )
+    
     # Config "acquisition" section is now complete, add it to the main config dictionary.
     cytokitConfigMain[ "acquisition" ] = cytokitConfigAcquisition
 
@@ -166,6 +209,7 @@ def main():
     cytokitConfigMain[ "environment" ] = { "path_formats" : "keyence_multi_cycle_v01" }
     
     # Processor section.
+    logger.info( "Populating processor section..." )
     # This section contains parameters for the preprocessing and segmentation
     # steps. Several of these parameters are taken from the Cytokit example
     # config as default values and may need to be optimised.
@@ -175,12 +219,12 @@ def main():
     cytokitConfigProcessor = { 
         "args" : {
             "gpus" : [ 0, 1 ],
-            "run_crop" : "true",
-            "run_tile_generator" : "true",
-            "run_drift_comp" : "true",
-            "run_cytometry" : "true",
-            "run_best_focus" : "true",
-            "run_deconvolution" : "true"
+            "run_crop" : True,
+            "run_tile_generator" : True,
+            "run_drift_comp" : True,
+            "run_cytometry" : True,
+            "run_best_focus" : True,
+            "run_deconvolution" : True
         }
     }
 
@@ -188,7 +232,7 @@ def main():
     cytokitConfigProcessor[ "deconvolution" ] = { "n_iter" : 25, "scale_factor" : .5 }
     cytokitConfigProcessor[ "tile_generator" ] = { "raw_file_type" : "keyence_mixed" }
     
-    # TODO: infer the nuclei channel name based on the channel names obtained earlier.
+    # Infer the nuclei channel name based on the channel names obtained earlier.
     nucleiChannelName = infer_nuclei_channel( 
         cytokitConfigMain[ "acquisition" ][ "channel_names" ], 
         cytokitConfigMain[ "acquisition" ][ "num_cycles" ]
@@ -196,12 +240,19 @@ def main():
 
     cytokitConfigProcessor[ "best_focus" ] = { "channel" : nucleiChannelName }
     cytokitConfigProcessor[ "drift_compensation" ] = { "channel" : nucleiChannelName }
+    
+    # The target_shape needs to be worked out based on the metadata. See
+    # comments on calculate_target_shape() function definition.
+    targetShape = calculate_target_shape( 
+        cytokitConfigAcquisition[ "magnification" ], 
+        cytokitConfigAcquisition[ "tile_height" ], 
+        cytokitConfigAcquisition[ "tile_width" ]
+    )
 
     # Cytometry parameters.
-    # TODO: target_shape and nuclei channel name need to be worked out based on the metadata.
     # Not including membrane channel name for now.
     cytokitConfigProcessor[ "cytometry" ] = {
-        #"target_shape" = [ x, y ],
+        "target_shape" : targetShape,
         "nuclei_channel_name" : nucleiChannelName,
         "segmentation_params" : {
             "memb_min_dist" : 8,
@@ -210,14 +261,31 @@ def main():
             "marker_dilation" : 3
         },
         "quantification_params" : {
-            "nucleus_intensity" : "true",
-            "cell_graph" : "true"
+            "nucleus_intensity" : True,
+            "cell_graph" : True
         }
     }
 
-    cytokitConfigMain[ "processor" ] = cytokitConfigProcessor
-    
+    logger.info( "Processor section complete." )
 
+    # Add the processor section to the main config.
+    cytokitConfigMain[ "processor" ] = cytokitConfigProcessor
+        
+    # Add analysis section.
+    cytokitConfigMain[ "analysis" ] = {
+        "aggregate_cytometry_statistics" : {
+            "mode" : "best_z_plane"
+        }
+    }
+    
+    logger.info( "Writing Cytokit config to " + args.outfile )
+
+    with open( args.outfile, 'w') as outFile:
+        yaml.safe_dump( 
+            cytokitConfigMain, 
+            outFile,
+            encoding = "utf-8"
+        )
 
 if __name__ == "__main__":
     main()
