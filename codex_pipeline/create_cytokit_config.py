@@ -42,8 +42,15 @@ def collect_attribute( fieldNames, configDict ) :
     sys.exit()
 
 def infer_channel_name_from_index( cycleIndex, channelIndex, channelNames ) :
+    
+    # FIXME: Assuming 4 channels per cycle. Could pass len( channels_per_cycle ) instead.
+    cycleLastChannelIdx = cycleIndex * 4
 
-    return channelNames[ ( cycleIndex * channelIndex ) - 1 ]
+    cycleChannelIndices = range( cycleLastChannelIdx - 4, cycleLastChannelIdx - 1 )
+
+    channelNameIdx = cycleChannelIndices[ channelIndex - 1 ]
+
+    return channelNames[ channelNameIdx ]
 
 
 # calculate_target_shape()
