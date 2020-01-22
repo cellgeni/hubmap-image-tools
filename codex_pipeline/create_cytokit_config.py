@@ -41,6 +41,8 @@ def collect_attribute( fieldNames, jsonObject ) :
     logger.error( "No match found for field name(s) in JSON file: %s" % fieldNameString )
     sys.exit()
 
+# FIXME: This is not the right way to get the nuclei channel
+# FIXME: Instead, use an additional config provided by submitters, which has the indices of the nuclear stain cycle and channel listed.
 # infer_nuclei_channel()
 # Try to infer the name of the channel used as the nucleus marker. This is done
 # in a very naive way, based on two assumptions:
