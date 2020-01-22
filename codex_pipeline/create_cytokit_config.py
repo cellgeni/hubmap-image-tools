@@ -164,6 +164,10 @@ def main() :
             segmParams = {}
             for line in fileLines :
                 fieldName, fieldContents = line.split( "=" )
+                numPattern = re.compile( "^[0-9]+$" )
+                numMatch = numPattern.match( fieldContents )
+                if numMatch :
+                    fieldContents = float( fieldContents )
                 segmParams[ fieldName ] = fieldContents
 
     # Empty dictionaries to store sections of Cytokit config.
