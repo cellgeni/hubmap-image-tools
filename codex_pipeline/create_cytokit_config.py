@@ -181,6 +181,7 @@ def main() :
     parser.add_argument(
         "-d",
         "--debug",
+        action="store_true",
         help = "turn on debugging logs."
     )
 
