@@ -178,8 +178,16 @@ def main() :
         "--outfile",
         help = "path to YAML output file."
     )
+    perser.add_argument(
+        "-d",
+        "--debug",
+        help = "turn on debugging logs."
+    )
 
     args = parser.parse_args()
+
+    if args.debug :
+        logger.setLevel( logging.DEBUG )
     
     if not args.outfile :
         args.outfile = "TEST_experiment.yaml"
