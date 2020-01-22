@@ -48,13 +48,18 @@ def collect_attribute( fieldNames, jsonObject ) :
 #   2: The nucleus channel is either called "DAPI" or "HOECHST".
 def infer_nuclei_channel( channelNames, channelsPerCycle ) :
     
+    # Fluorescent reporters known to be used to detect nuclei.
+    # Using lower case, below pattern matching ignores case.
     nucleiMarkers = {
         "dapi" : 1,
         "hoechst" : 1
     }
-
+    
+    # Total number of channels across all cycles is the total number of assays.
     totalAssays = len( channelNames )
-
+    
+    # If the total number of assays cannot be divided evenly by the number of
+    # channels per cycle, we have a problem.
     if totalAssays % channelsPerCycle :
         logger.error( "Total number of assays does not produce a whole number when divided by number of channels per cycle." )
         
@@ -66,58 +71,65 @@ def infer_nuclei_channel( channelNames, channelsPerCycle ) :
 
         sys.exit()
 
+    # The number of cycles is deduced by dividing the total number of assays by
+    # the channels per cycle. This is because the number listed in the JSON
+    # file is not always reliable.
     numCycles = int( totalAssays / channelsPerCycle )
     
-        
-    # TODO: need to check whether marker has extra numbers at the end to denote cycle number.
+    # Next we will search for the name of the reporter used to detect nuclei.
+    # This is assumed to occupy the "first" channel position in each cycle, and
+    # to be the same in all of the cycles. It must also match one of the known
+    # nuclei reporters listed above, ignoring case.
+    # Sometimes numbers are added to the end of the nuclei channel name to
+    # denote cycle -- this is accounted for below.
     
+    # Empty dictionary to collect nuclei reporter(s) found. We need to be
+    # careful in case more than one is listed, in which case we wouldn't know
+    # which one to list as the nuclei channel in the final config.
     nucleiChannelNames = {}
+    
+    # Initialise cycle counter and overall channel index counter.
     cycleIndex, channelIndex = 0, 0
-    while cycleIndex < numCycles :
 
+    # For each cycle...
+    while cycleIndex < numCycles :
+        
+        # Take the name of the channel at this channel index from the full list
+        # of channels.
         channelName = channelNames[ channelIndex ]
 
         # Check if it matches a known marker.
         for marker in nucleiMarkers :
-            pattern = re.compile( "^" + marker + "$" )
+
+            # First match on just the marker name, with no trailing numbers.
+            pattern = re.compile( "^" + marker + "$", re.IGNORECASE )
             match = pattern.match( channelName )
+            
             if match :
                 nucleiChannelNames[ channelName ] = 1
+            
             else :
+
+                # If this channel name didn't match this nuclei marker without
+                # trailing numbers, see if it matches _with_ trailing numbers.
                 patternWithIdx = re.compile( "^" + marker + "\d+$" )
                 matchWithIdx = patternWithIdx.match( channelName )
+            
+                if matchWithIdx :
+                    nucleiChannelNames[ channelName ] = 1
 
+        cycleIndex += 1
+        channelIndex += channelsPerCycle
 
-    # Collect the names of the first channel in each cycle, in a dictionary.
-    #while cycleIndex < numCycles :
-        
-    #    channelName = channelNames[ channelIndex ]
-
-
-    #    firstChannelNames[ channelName ] = 1
-    #    cycleIndex += 1
-    #    channelIndex += channelsPerCycle
-
-    # So far, the first channel is always the same, and is always the nucleus channel.
-    #if len( firstChannelNames ) is 1 :
-    #    firstChannel = next(iter(firstChannelNames.keys()))
-    #    pattern = re.compile( "^" + firstChannel + "$", re.IGNORECASE )
-    #    for marker in nucleiMarkers:
-    #        match = pattern.match( marker )
-    #        if match :
-    #            return firstChannel
-    #    
-    #    # If we haven't returned, then the channel name didn't match any of the
-    #    # known nuclei markers, so we have to fail for now.
-    #    logger.error( firstChannel + " is not a known nuclei marker. Add it to the list if it should be and try again." )
-    #    sys.exit()
-    #
-    #else :
-    #    # If we had more than one marker in channel position "1" when looking
-    #    # at all the cycles, we can't currently decide which one to use, so we
-    #    # have to fail for now.
-    #    logger.error( "More than one marker used in \"channel 1\", don't know where to look for nuclei marker.")
-    #    sys.exit()
+    # If we got no matches, we don't know the nucleus channel.
+    if len( nucleiChannelNames ) is 0 :
+        logger.error( "No nuclei channel found. Cannot continue." )
+        sys.exit()
+    elif len( nucleiChannelNames ) > 1 :
+        logger.error( "Found more than one possible nuclei channel. Cannot continue." )
+        sys.exit()
+    else :
+        return next(iter(nucleiChannelNames.keys()))
 
 
 # calculate_target_shape()
