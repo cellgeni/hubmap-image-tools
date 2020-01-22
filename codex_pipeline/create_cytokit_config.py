@@ -178,7 +178,7 @@ def main() :
         "--outfile",
         help = "path to YAML output file."
     )
-    perser.add_argument(
+    parser.add_argument(
         "-d",
         "--debug",
         help = "turn on debugging logs."
