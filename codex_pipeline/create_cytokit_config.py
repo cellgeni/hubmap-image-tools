@@ -112,11 +112,11 @@ def infer_nuclei_channel( channelNames, channelsPerCycle ) :
 
                 # If this channel name didn't match this nuclei marker without
                 # trailing numbers, see if it matches _with_ trailing numbers.
-                patternWithIdx = re.compile( "^" + marker + "\d+$", re.IGNORECASE )
+                patternWithIdx = re.compile( "^(" + marker + ")\d+$", re.IGNORECASE )
                 matchWithIdx = patternWithIdx.match( channelName )
             
                 if matchWithIdx :
-                    nucleiChannelNames[ channelName ] = 1
+                    nucleiChannelNames[ matchWithIdx.group( 1 ) ] = 1
 
         cycleIndex += 1
         channelIndex += channelsPerCycle
