@@ -167,7 +167,7 @@ def main() :
                 numPattern = re.compile( "^[0-9]+$" )
                 numMatch = numPattern.match( fieldContents )
                 if numMatch :
-                    fieldContents = float( fieldContents )
+                    fieldContents = int( fieldContents )
                 segmParams[ fieldName ] = fieldContents
 
     # Empty dictionaries to store sections of Cytokit config.
