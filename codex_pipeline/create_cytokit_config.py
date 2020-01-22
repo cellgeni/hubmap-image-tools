@@ -22,116 +22,28 @@ logger = logging.getLogger(__name__)
 # called "date" and in others it is called "dateProcessed".
 # The order the field names are passed in this list matters, because only the
 # first one to match is returned.
-# In some cases, the JSON file contains both versions of the field name, but
+# In some cases, the config file contains both versions of the field name, but
 # only one of them has valid content. For example, some files have:
 #   - "aperture": 0.75
 #   - "numerical_aperture": 0.0
 # So in this case we would only want the contents of the "aperture" field.
 # In other cases, the "aperture" field doesn't exist, and only the
 # "numerical_aperture" field is present, with valid content.
-def collect_attribute( fieldNames, jsonObject ) :
+def collect_attribute( fieldNames, configDict ) :
     
     for fieldName in fieldNames:
-        if fieldName in jsonObject:
-            return jsonObject[ fieldName ]
+        if fieldName in configDict:
+            return configDict[ fieldName ]
     
     # If we're still here, it means we tried all the possible field names and
-    # didn't find a match in the JSON, so we have to fail.
+    # didn't find a match in the config, so we have to fail.
     fieldNameString = ", ".join( fieldNames )
-    logger.error( "No match found for field name(s) in JSON file: %s" % fieldNameString )
+    logger.error( "No match found for field name(s) in config: %s" % fieldNameString )
     sys.exit()
 
-# FIXME: This is not the right way to get the nuclei channel
-# FIXME: Instead, use an additional config provided by submitters, which has the indices of the nuclear stain cycle and channel listed.
-# infer_nuclei_channel()
-# Try to infer the name of the channel used as the nucleus marker. This is done
-# in a very naive way, based on two assumptions:
-#   1: The nucleus channel is probably "channel 1" in each cycle.
-#   2: The nucleus channel is either called "DAPI" or "HOECHST".
-def infer_nuclei_channel( channelNames, channelsPerCycle ) :
-    
-    # Fluorescent reporters known to be used to detect nuclei.
-    # Using lower case, below pattern matching ignores case.
-    nucleiMarkers = {
-        "dapi" : 1,
-        "hoechst" : 1
-    }
-    
-    # Total number of channels across all cycles is the total number of assays.
-    totalAssays = len( channelNames )
-    
-    # If the total number of assays cannot be divided evenly by the number of
-    # channels per cycle, we have a problem.
-    if totalAssays % channelsPerCycle :
-        logger.error( "Total number of assays does not produce a whole number when divided by number of channels per cycle." )
-        
-        print( channelNames )
+def infer_channel_name_from_index( cycleIndex, channelIndex, channelNames ) :
 
-        print( "Number of assays: " + str( totalAssays ) )
-
-        print( "Number of channels per cycle: " + str( numCycles ) )
-
-        sys.exit()
-
-    # The number of cycles is deduced by dividing the total number of assays by
-    # the channels per cycle. This is because the number listed in the JSON
-    # file is not always reliable.
-    numCycles = int( totalAssays / channelsPerCycle )
-    
-    # Next we will search for the name of the reporter used to detect nuclei.
-    # This is assumed to occupy the "first" channel position in each cycle, and
-    # to be the same in all of the cycles. It must also match one of the known
-    # nuclei reporters listed above, ignoring case.
-    # Sometimes numbers are added to the end of the nuclei channel name to
-    # denote cycle -- this is accounted for below.
-    
-    # Empty dictionary to collect nuclei reporter(s) found. We need to be
-    # careful in case more than one is listed, in which case we wouldn't know
-    # which one to list as the nuclei channel in the final config.
-    nucleiChannelNames = {}
-    
-    # Initialise cycle counter and overall channel index counter.
-    cycleIndex, channelIndex = 0, 0
-
-    # For each cycle...
-    while cycleIndex < numCycles :
-        
-        # Take the name of the channel at this channel index from the full list
-        # of channels.
-        channelName = channelNames[ channelIndex ]
-
-        # Check if it matches a known marker.
-        for marker in nucleiMarkers :
-
-            # First match on just the marker name, with no trailing numbers.
-            pattern = re.compile( "^" + marker + "$", re.IGNORECASE )
-            match = pattern.match( channelName )
-            
-            if match :
-                nucleiChannelNames[ channelName ] = 1
-            
-            else :
-
-                # If this channel name didn't match this nuclei marker without
-                # trailing numbers, see if it matches _with_ trailing numbers.
-                patternWithIdx = re.compile( "^(" + marker + ")\d+$", re.IGNORECASE )
-                matchWithIdx = patternWithIdx.match( channelName )
-            
-                if matchWithIdx :
-                    nucleiChannelNames[ matchWithIdx.group( 1 ) ] = 1
-
-        cycleIndex += 1
-        channelIndex += channelsPerCycle
-
-    # If we got no matches, we don't know the nucleus channel.
-    if len( nucleiChannelNames ) is 0 :
-        logger.error( "No nuclei channel found. Cannot continue." )
-        sys.exit()
-    elif len( nucleiChannelNames ) > 1 :
-        logger.error( "Found more than one possible nuclei channel. Cannot continue." )
-        sys.exit()
-    else :
-        return next(iter(nucleiChannelNames.keys()))
+    return channelNames[ ( cycleIndex * channelIndex ) - 1 ]
 
 
 # calculate_target_shape()
@@ -167,8 +79,16 @@ def main() :
         description = "Create a YAML config file for Cytokit, based on a JSON file from the CODEX Toolkit pipeline. YAML file will be created in current working directory unless otherwise specified."
     )
     parser.add_argument(
-        "jsonFileName",
-        help = "path to experiment.json file from CODEX Toolkit pipeline"
+        "exptJsonFileName",
+        help = "path to experiment.json file from CODEX Toolkit pipeline."
+    )
+    parser.add_argument(
+        "--segm-json",
+        help = "path to JSON file containing segmentation parameters (including nuclearStainChannel and nuclearStainCycle)."
+    )
+    parser.add_argument(
+        "--segm-text",
+        help = "path to text file containing segmentation parameters (including nuclearStainChannel and nuclearStainCycle)."
     )
     parser.add_argument(
         "-c",
@@ -192,22 +112,52 @@ def main() :
     if args.debug :
         logger.setLevel( logging.DEBUG )
     
+    if not args.segm_json and not args.segm_text :
+        logger.error( "Segmentation parameters file name not provided. Cannot continue." )
+        sys.exit()
+    
+    if args.segm_json and args.segm_text :
+        logger.warning( 
+            "Segmentation parameter files " +
+            args.segm_json +
+            " and " +
+            args.segm_text +
+            " provided. Will only use " +
+            args.segm_json
+        )
+
     if not args.outfile :
         args.outfile = "TEST_experiment.yaml"
 
     logger.info( "Output filename: " + args.outfile )
 
     if not args.channel_names :
-        logger.info( "No channel names file passed. Will look for channel names in JSON config." )
+        logger.info( "No channel names file passed. Will look for channel names in experiment JSON config." )
 
-    logger.info( "Reading config from " + args.jsonFileName + "..." )
-    # Open the JSON config.
-    with open( args.jsonFileName, 'r' ) as jsonFile:
-        jsonData = jsonFile.read()
-    logger.info( "Read file " + args.jsonFileName )
+    logger.info( "Reading config from " + args.exptJsonFileName + "..." )
+    
 
-    # Create dictionary from JSON config.
-    jsonObject = json.loads( jsonData )
+    # Read in the experiment JSON config.
+    with open( args.exptJsonFileName, 'r' ) as exptJsonFile :
+        exptJsonData = exptJsonFile.read()
+    logger.info( "Read file " + args.exptJsonFileName )
+
+    # Create dictionary from experiment JSON config.
+    exptConfigDict = json.loads( exptJsonData )
+    
+    # Read in the segmentation parameters. If we have a JSON file, use that.
+    if args.segm_json :
+        with open( args.segm_json, 'r' ) as segmJsonFile :
+            segmJsonData = segmJsonFile.read()
+        segmParams = json.loads( segmJsonData )
+    else :
+
+        with open( args.segm_text, 'r' ) as segmTextFile :
+            fileLines = segmTextFile.read().splitlines()
+            segmParams = {}
+            for line in fileLines :
+                fieldName, fieldContents = line.split( "=" )
+                segmParams[ fieldName ] = fieldContents
 
     # Empty dictionaries to store sections of Cytokit config.
     cytokitConfigMain = {}
@@ -216,27 +166,27 @@ def main() :
     # Collect some initial values for the config. Sometimes we have to pass multiple
     # possible options (see comments above collect_attribute() function
     # definition).
-    cytokitConfigMain[ "name" ] = collect_attribute( [ "name" ], jsonObject )
-    cytokitConfigMain[ "date" ] = collect_attribute( [ "date", "dateProcessed" ], jsonObject )
+    cytokitConfigMain[ "name" ] = collect_attribute( [ "name" ], exptConfigDict )
+    cytokitConfigMain[ "date" ] = collect_attribute( [ "date", "dateProcessed" ], exptConfigDict )
     
     logger.info( "Populating acquisition section..." )
 
-    cytokitConfigAcquisition[ "emission_wavelengths" ] = collect_attribute( [ "emission_wavelengths", "wavelengths" ], jsonObject )
-    cytokitConfigAcquisition[ "axial_resolution" ] = collect_attribute( [ "zPitch", "z_pitch" ], jsonObject )
-    cytokitConfigAcquisition[ "lateral_resolution" ] = collect_attribute( [ "xyResolution", "per_pixel_XY_resolution" ], jsonObject )
-    cytokitConfigAcquisition[ "magnification" ] = collect_attribute( [ "magnification" ], jsonObject )
-    cytokitConfigAcquisition[ "num_z_planes" ] = collect_attribute( [ "num_z_planes" ], jsonObject )
-    cytokitConfigAcquisition[ "numerical_aperture" ] = collect_attribute( [ "aperture", "numerical_aperture" ], jsonObject )
-    cytokitConfigAcquisition[ "objective_type" ] = collect_attribute( [ "objectiveType" ], jsonObject )
-    cytokitConfigAcquisition[ "region_names" ] = collect_attribute( [ "region_names" ], jsonObject )
-    cytokitConfigAcquisition[ "region_height" ] = collect_attribute( [ "region_height" ], jsonObject )
-    cytokitConfigAcquisition[ "region_width" ] = collect_attribute( [ "region_width" ], jsonObject )
-    cytokitConfigAcquisition[ "tile_height" ] = collect_attribute( [ "tile_height" ], jsonObject )
-    cytokitConfigAcquisition[ "tile_width" ] = collect_attribute( [ "tile_width" ], jsonObject )
-    cytokitConfigAcquisition[ "tile_overlap_x" ] = collect_attribute( [ "tile_overlap_X" ], jsonObject )
-    cytokitConfigAcquisition[ "tile_overlap_y" ] = collect_attribute( [ "tile_overlap_Y" ], jsonObject )
-    cytokitConfigAcquisition[ "tiling_mode" ] = collect_attribute( [ "tiling_mode" ], jsonObject )
-    cytokitConfigAcquisition[ "per_cycle_channel_names" ] = collect_attribute( [ "channel_names" ], jsonObject )
+    cytokitConfigAcquisition[ "emission_wavelengths" ] = collect_attribute( [ "emission_wavelengths", "wavelengths" ], exptConfigDict )
+    cytokitConfigAcquisition[ "axial_resolution" ] = collect_attribute( [ "zPitch", "z_pitch" ], exptConfigDict )
+    cytokitConfigAcquisition[ "lateral_resolution" ] = collect_attribute( [ "xyResolution", "per_pixel_XY_resolution" ], exptConfigDict )
+    cytokitConfigAcquisition[ "magnification" ] = collect_attribute( [ "magnification" ], exptConfigDict )
+    cytokitConfigAcquisition[ "num_z_planes" ] = collect_attribute( [ "num_z_planes" ], exptConfigDict )
+    cytokitConfigAcquisition[ "numerical_aperture" ] = collect_attribute( [ "aperture", "numerical_aperture" ], exptConfigDict )
+    cytokitConfigAcquisition[ "objective_type" ] = collect_attribute( [ "objectiveType" ], exptConfigDict )
+    cytokitConfigAcquisition[ "region_names" ] = collect_attribute( [ "region_names" ], exptConfigDict )
+    cytokitConfigAcquisition[ "region_height" ] = collect_attribute( [ "region_height" ], exptConfigDict )
+    cytokitConfigAcquisition[ "region_width" ] = collect_attribute( [ "region_width" ], exptConfigDict )
+    cytokitConfigAcquisition[ "tile_height" ] = collect_attribute( [ "tile_height" ], exptConfigDict )
+    cytokitConfigAcquisition[ "tile_width" ] = collect_attribute( [ "tile_width" ], exptConfigDict )
+    cytokitConfigAcquisition[ "tile_overlap_x" ] = collect_attribute( [ "tile_overlap_X" ], exptConfigDict )
+    cytokitConfigAcquisition[ "tile_overlap_y" ] = collect_attribute( [ "tile_overlap_Y" ], exptConfigDict )
+    cytokitConfigAcquisition[ "tiling_mode" ] = collect_attribute( [ "tiling_mode" ], exptConfigDict )
+    cytokitConfigAcquisition[ "per_cycle_channel_names" ] = collect_attribute( [ "channel_names" ], exptConfigDict )
     cytokitConfigAcquisition[ "num_cycles" ] = len( cytokitConfigAcquisition[ "per_cycle_channel_names" ] )
     
     if args.channel_names :
@@ -244,8 +194,8 @@ def main() :
             channelNames = channelNamesFile.read().splitlines()
         cytokitConfigAcquisition[ "channel_names" ] = channelNames
     else :
-        if "channelNames" in jsonObject :
-            cytokitConfigAcquisition[ "channel_names" ] = collect_attribute( [ "channelNamesArray" ], jsonObject[ "channelNames" ] )
+        if "channelNames" in exptConfigDict :
+            cytokitConfigAcquisition[ "channel_names" ] = collect_attribute( [ "channelNamesArray" ], exptConfigDict[ "channelNames" ] )
         else :
             logger.error( "Cannot find data for channel_names field." )
             sys.exit()
@@ -287,15 +237,33 @@ def main() :
     cytokitConfigProcessor[ "deconvolution" ] = { "n_iter" : 25, "scale_factor" : .5 }
     cytokitConfigProcessor[ "tile_generator" ] = { "raw_file_type" : "keyence_mixed" }
     
-    # Infer the nuclei channel name based on the channel names obtained earlier.
-    nucleiChannelName = infer_nuclei_channel( 
-        cytokitConfigMain[ "acquisition" ][ "channel_names" ], 
-        cytokitConfigMain[ "acquisition" ][ "num_cycles" ]
+    bestFocusChannel = collect_attribute( [ "bestFocusReferenceChannel", "best_focus_channel" ], exptConfigDict )
+    bestFocusCycle = collect_attribute( [ "bestFocusReferenceCycle" ], exptConfigDict )
+    bestFocusChannelName = infer_channel_name_from_index( 
+        bestFocusCycle, 
+        bestFocusChannel, 
+        cytokitConfigAcquisition[ "channel_names" ] 
     )
 
-    cytokitConfigProcessor[ "best_focus" ] = { "channel" : nucleiChannelName }
-    cytokitConfigProcessor[ "drift_compensation" ] = { "channel" : nucleiChannelName }
+    driftCompChannel = collect_attribute( [ "driftCompReferenceChannel", "drift_comp_channel" ], exptConfigDict )
+    driftCompCycle = collect_attribute( [ "driftCompReferenceCycle" ], exptConfigDict )
+    driftCompChannelName = infer_channel_name_from_index( 
+        driftCompCycle, 
+        driftCompChannel, 
+        cytokitConfigAcquisition[ "channel_names" ] 
+    )
+
+    cytokitConfigProcessor[ "best_focus" ] = { "channel" : bestFocusChannelName }
+    cytokitConfigProcessor[ "drift_compensation" ] = { "channel" : driftCompChannelName }
     
+    nucleiChannel = collect_attribute( [ "nuclearStainChannel" ], segmParams )
+    nucleiCycle = collect_attribute( [ "nuclearStainCycle" ], segmParams )
+    nucleiChannelName = infer_channel_name_from_index( 
+        nucleiCycle, 
+        nucleiChannel, 
+        cytokitConfigAcquisition[ "channel_names" ]
+    )
+
     # The target_shape needs to be worked out based on the metadata. See
     # comments on calculate_target_shape() function definition.
     targetShape = calculate_target_shape( 
@@ -308,7 +276,7 @@ def main() :
     # Not including membrane channel name for now.
     cytokitConfigProcessor[ "cytometry" ] = {
         "target_shape" : targetShape,
-        "nuclei_channel_name" : nucleiChannelName,
+        "nuclei_channel_name" : nucleiChannelName, 
         "segmentation_params" : {
             "memb_min_dist" : 8,
             "memb_sigma" : 5,
