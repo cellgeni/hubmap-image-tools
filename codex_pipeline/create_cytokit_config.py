@@ -198,7 +198,7 @@ def main() :
     cytokitConfigAcquisition[ "tile_overlap_y" ] = collect_attribute( [ "tile_overlap_Y" ], exptConfigDict )
     cytokitConfigAcquisition[ "tiling_mode" ] = collect_attribute( [ "tiling_mode" ], exptConfigDict )
     cytokitConfigAcquisition[ "per_cycle_channel_names" ] = collect_attribute( [ "channel_names" ], exptConfigDict )
-    cytokitConfigAcquisition[ "num_cycles" ] = len( cytokitConfigAcquisition[ "per_cycle_channel_names" ] )
+    cytokitConfigAcquisition[ "num_cycles" ] = collect_attribute( [ "num_cycles" ], exptConfigDict )
     
     if args.channel_names :
         with open( args.channel_names, 'r' ) as channelNamesFile :
