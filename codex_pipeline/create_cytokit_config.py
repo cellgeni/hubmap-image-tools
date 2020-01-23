@@ -107,18 +107,9 @@ def main() :
         "--outfile",
         help = "path to YAML output file."
     )
-    parser.add_argument(
-        "-d",
-        "--debug",
-        action="store_true",
-        help = "turn on debugging logs."
-    )
 
     args = parser.parse_args()
 
-    if args.debug :
-        logger.setLevel( logging.DEBUG )
-    
     if not args.segm_json and not args.segm_text :
         logger.error( "Segmentation parameters file name not provided. Cannot continue." )
         sys.exit()
