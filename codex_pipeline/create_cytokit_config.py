@@ -80,7 +80,7 @@ def calculate_target_shape( magnification, tileHeight, tileWidth ) :
 
 
 # main()
-def main() :
+if __name__ == "__main__" :
     # Set up argument parser and parse the command line arguments.
     parser = argparse.ArgumentParser( 
         description = "Create a YAML config file for Cytokit, based on a JSON file from the CODEX Toolkit pipeline. YAML file will be created in current working directory unless otherwise specified."
@@ -316,6 +316,6 @@ def main() :
             indent = 2
         )
 
-if __name__ == "__main__":
-    main()
+#if __name__ == "__main__":
+#    main()
 
