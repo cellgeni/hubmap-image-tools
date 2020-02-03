@@ -13,8 +13,22 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Patterns for detecting raw data files are below. 
+# We follow Cytokit's "keyence_multi_cycle_v01" naming convention defined in:
+# https://github.com/hammerlab/cytokit/blob/master/python/pipeline/cytokit/io.py
+# Pattern for the directories containing the raw data from each cycle-region
+# pair. Different submitters use different naming conventions (e.g.
+# cyc001_reg001_191209_123455 or Cyc1_reg1), so our regex has to allow for this.
 rawDirNamingPattern = re.compile( r'^cyc0*(\d+)_reg0*(\d+).*', re.IGNORECASE )
+# Pattern for raw data TIFF files. These should be named according to the following pattern:
+# <region index>_<tile index>_Z<z-plane index>_CH<channel index>.tif
+# All indices start at 1.
+# Tile index is padded to three digits, e.g. 00025, 00001, etc.
+# Z-plane index is padded to three digits, e.g. 025, 001, etc.
+# Region and channel indices are one digit each.
 rawFileNamingPattern = re.compile( r'^\d_\d{5}_Z\d{3}_CH\d\.tif$' )
+# Pattern to match one single digit at the start of a string, used to replace
+# incorrect region indices with the correct ones in some raw data TIFF files.
 rawFileRegionPattern = re.compile( r'^\d' )
 
 
@@ -34,6 +48,11 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
 
+    
+    ###################################################################
+    # Inspect source directories and collect paths to raw data files. #
+    ###################################################################
+    
     # Ensure that source directory exists and is readable.
     st = os.stat( args.sourceDirectory )
     readable = bool( st.st_mode & stat.S_IRUSR )
@@ -45,9 +64,10 @@ if __name__ == "__main__":
         )
         sys.exit(1)
 
-    # Get list of contents of source directory.
-    sourceDirList = None
     
+    # Get list of contents of source directory. This should contain a set of
+    # subdirectories, one for each cycle-region pair.
+    sourceDirList = None
     try :
         sourceDirList = os.listdir( args.sourceDirectory )
     except OSError as err :
@@ -59,15 +79,15 @@ if __name__ == "__main__":
         )
         sys.exit(1)
    
-    
-    # Look for directories matching the expected raw data directory naming pattern.
+    # Filter the contents list of the source directory for directories matching
+    # the expected raw data directory naming pattern (cycle-region pairs).
+    # Different submitters follow different naming conventions currently.
     sourceDataDirs = list( 
         filter( 
             rawDirNamingPattern.search,
             sourceDirList
         )
     )
-    
     # If there were no matching directories found, exit.
     if len( sourceDataDirs ) is 0 :
 
@@ -77,25 +97,12 @@ if __name__ == "__main__":
         )
         sys.exit(1)
     
-
-    # TODO: inspect list of source dir contents and create symlinks accordingly.
-    # Some dirs are named like "cyc1_reg1_191205_225343" or "Cyc1_reg1".
-    # TODO: For the uf data, we could simply create symlinks to the cycle
-    # directories named according to pattern "Cyc{cycle:d}_reg{region:d}",
-    # because the files inside are named according to the rest of the pattern
-    # already. However for the other data, the cycle directories are named
-    # according to the pattern but the files inside always have a "1" at the
-    # start where the region number should be. Since there is more than one
-    # region in this dataset, my expectation is that if the TIFFs begin with
-    # "1" but the region number is not "1", Cytokit will complain. This needs
-    # to be looked into though, maybe it will be OK.
-    # However, doing different things depending on the source directory and
-    # file naming unnecessarily complicates the code. We may as well just
-    # create individual links for the files, rather than sometimes creating links
-    # for directories and other times creating links for files.
     
+    # Go through the cycle-region directories and get a list of the contents of
+    # each one. Each cycle-region directory should contain TIFF files,
+    # following the raw data file naming convention defined above.
+    # Collect raw data file names in a dictionary, indexed by directory name.
     sourceDataFiles = {}
-
     for sdir in sourceDataDirs :
        
         fileList = None
@@ -111,19 +118,16 @@ if __name__ == "__main__":
             )
             sys.exit(1)
         
-        # Validate naming pattern of raw data files. This should follow this
-        # pattern:
-        # <region index>_<tile index>_Z<z-plane index>_CH<channel index>.tif
-        # All indices start at 1.
-        # Tile index is padded to three digits, e.g. 00025, 00001, etc.
-        # Z-plane index is padded to three digits, e.g. 025, 001, etc.
-        # Region and channel indices are one digit each.
+        # Validate naming pattern of raw data files according to pattern
+        # defined above.
         fileList = list(
             filter(
                 rawFileNamingPattern.search,
                 fileList
             )
         )
+
+        # Die if we didn't get any matching files.
         if len( fileList ) is 0 :
             logger.error(
                 "No files found matching expected raw file naming pattern in " +
@@ -131,6 +135,7 @@ if __name__ == "__main__":
             )
             sys.exit(1)
         
+        # Otherwise, collect the list of matching file names in the dictionary.
         else :
             sourceDataFiles[ sdir ] = fileList
 
@@ -140,7 +145,6 @@ if __name__ == "__main__":
     # Start creating directories and links
     ######################################
 
-    
     # Create target directory.
     # FIXME: what permissions should this have?
     try :
@@ -175,9 +179,9 @@ if __name__ == "__main__":
 
     
     # Create cycle-region directories containing symlinks to files.
+    logger.info( "Creating symlinks to raw data files..." )
     for sdir in sourceDataFiles :
         
-        #dirPattern = re.compile( rawDirNamingPattern, re.IGNORECASE )
         dirMatch = rawDirNamingPattern.match( sdir )
 
         cycle, region = dirMatch.group( 1, 2 )
@@ -196,10 +200,28 @@ if __name__ == "__main__":
             sys.exit(1)
 
         # Create symlinks for TIFF files.
-        for tifFilename in sourceDataFiles[ sdir ] :
+        for tifFileName in sourceDataFiles[ sdir ] :
             
             # Replace the region number at the start because sometimes it's wrong.
-            tifFilename = rawFileRegionPattern.sub( region, tifFilename )
+            linkTifFileName = rawFileRegionPattern.sub( region, tifFileName )
+
+            # Set up full path to symlink.
+            linkTifFilePath = os.path.join( cycleRegionDir, linkTifFileName )
             
-            #try :
-            #    os.symlink( )
+            # Full path to source raw data file.
+            sourceTifFilePath = os.path.join( args.sourceDirectory, sdir, tifFileName )
+            
+            # Create the symlink.
+            try :
+                os.symlink( 
+                    sourceTifFilePath,
+                    linkTifFilePath
+                )
+            except OSError as err :
+                logger.error(
+                    "Count not create symbolic link: " +
+                    err.strerror
+                )
+                sys.exit(1)
+
+    logger.info( "Links created in directories under %s" % dataDir )
