@@ -191,6 +191,11 @@ if __name__ == "__main__" :
     cytokitConfigAcquisition[ "per_cycle_channel_names" ] = collect_attribute( [ "channel_names" ], exptConfigDict )
     cytokitConfigAcquisition[ "num_cycles" ] = collect_attribute( [ "num_cycles" ], exptConfigDict )
     
+
+
+    # TODO: if there are identical channel names, make them unique by adding
+    # incremental numbers to the end.
+
     if args.channel_names :
         with open( args.channel_names, 'r' ) as channelNamesFile :
             channelNames = channelNamesFile.read().splitlines()
