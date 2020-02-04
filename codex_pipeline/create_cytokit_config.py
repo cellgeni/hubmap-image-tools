@@ -240,7 +240,9 @@ if __name__ == "__main__" :
     # Work out number of cycles based on number of channel names and per cycle
     # channel names. The "num_cycles" field in the submitted config is not
     # always accurate.
-    cytokitConfigAcquisition[ "num_cycles" ] = len( channelNames ) / len( cytokitConfigAcquisition[ "per_cycle_channel_names" ] )
+    cytokitConfigAcquisition[ "num_cycles" ] = int(
+            len( channelNames ) / len( cytokitConfigAcquisition[ "per_cycle_channel_names" ] )
+    )
     
     
 
