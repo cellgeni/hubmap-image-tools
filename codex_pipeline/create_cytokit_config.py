@@ -39,7 +39,7 @@ def collect_attribute( fieldNames, configDict ) :
     # didn't find a match in the config, so we have to fail.
     fieldNameString = ", ".join( fieldNames )
     logger.error( "No match found for field name(s) in config: %s" % fieldNameString )
-    sys.exit()
+    sys.exit(1)
 
 def infer_channel_name_from_index( cycleIndex, channelIndex, channelNames ) :
     
@@ -112,7 +112,7 @@ if __name__ == "__main__" :
 
     if not args.segm_json and not args.segm_text :
         logger.error( "Segmentation parameters file name not provided. Cannot continue." )
-        sys.exit()
+        sys.exit(1)
     
     if args.segm_json and args.segm_text :
         logger.warning( 
@@ -200,12 +200,11 @@ if __name__ == "__main__" :
         with open( args.channel_names, 'r' ) as channelNamesFile :
             channelNames = channelNamesFile.read().splitlines()
         cytokitConfigAcquisition[ "channel_names" ] = channelNames
+    elif "channelNames" in exptConfigDict :
+        cytokitConfigAcquisition[ "channel_names" ] = collect_attribute( [ "channelNamesArray" ], exptConfigDict[ "channelNames" ] )
     else :
-        if "channelNames" in exptConfigDict :
-            cytokitConfigAcquisition[ "channel_names" ] = collect_attribute( [ "channelNamesArray" ], exptConfigDict[ "channelNames" ] )
-        else :
-            logger.error( "Cannot find data for channel_names field." )
-            sys.exit()
+        logger.error( "Cannot find data for channel_names field." )
+        sys.exit(1)
     
     logger.info( "Acquisition section complete." )
     
