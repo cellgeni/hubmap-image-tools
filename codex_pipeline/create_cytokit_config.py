@@ -78,8 +78,34 @@ def calculate_target_shape( magnification, tileHeight, tileWidth ) :
     
     return [ dims[ "height" ], dims[ "width" ] ]
 
+# make_channel_names_unique( channelNames )
+# Sometimes channel names are not unique, e.g. if DAPI was used in every cycle,
+# sometimes each DAPI channel is just named "DAPI", other times they are named
+# "DAPI1", "DAPI2", "DAPI3", etc. The latter is better, because it enables us
+# to select the specific DAPI channel from the correct cycle to use for
+# segmentation and/or for best focus plane selection. So, if there are
+# duplicated channel names, we will append an index, starting at 1, to each
+# occurrence of the channel name.
+def make_channel_names_unique( channelNames ) :
+    
+    uniqueNames = {}
+    newNames = []
 
+    for channel in channelNames :
+        if channel in uniqueNames :
+            newChannel = channel + str( uniqueNames[ channel ] )
+            newNames.append( newChannel )
+            uniqueNames[ channel ] += 1
+        else :
+            uniqueNames[ channel ] = 1
+            newNames.append( channel )
+    
+    return newNames
+    
 
+########
+# MAIN #
+########
 if __name__ == "__main__" :
     # Set up argument parser and parse the command line arguments.
     parser = argparse.ArgumentParser( 
@@ -191,21 +217,25 @@ if __name__ == "__main__" :
     cytokitConfigAcquisition[ "per_cycle_channel_names" ] = collect_attribute( [ "channel_names" ], exptConfigDict )
     cytokitConfigAcquisition[ "num_cycles" ] = collect_attribute( [ "num_cycles" ], exptConfigDict )
     
-
-
-    # TODO: if there are identical channel names, make them unique by adding
-    # incremental numbers to the end.
+    # Collect channel names.
+    channelNames = None
 
     if args.channel_names :
         with open( args.channel_names, 'r' ) as channelNamesFile :
             channelNames = channelNamesFile.read().splitlines()
-        cytokitConfigAcquisition[ "channel_names" ] = channelNames
+        #cytokitConfigAcquisition[ "channel_names" ] = channelNames
     elif "channelNames" in exptConfigDict :
-        cytokitConfigAcquisition[ "channel_names" ] = collect_attribute( [ "channelNamesArray" ], exptConfigDict[ "channelNames" ] )
+        #cytokitConfigAcquisition[ "channel_names" ] = collect_attribute( [ "channelNamesArray" ], exptConfigDict[ "channelNames" ] )
+        channelNames = collect_attribute( [ "channelNamesArray" ], exptConfigDict[ "channelNames" ] )
     else :
         logger.error( "Cannot find data for channel_names field." )
         sys.exit(1)
     
+    # If there are identical channel names, make them unique by adding
+    # incremental numbers to the end.
+    channelNames = make_channel_names_unique( channelNames )
+
+
     logger.info( "Acquisition section complete." )
     
     # Config "acquisition" section is now complete, add it to the main config dictionary.
