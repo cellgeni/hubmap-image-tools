@@ -113,25 +113,25 @@ if __name__ == "__main__" :
     )
     parser.add_argument(
         "exptJsonFileName",
-        help = "path to experiment.json file from CODEX Toolkit pipeline."
+        help = "Path to experiment.json file from CODEX Toolkit pipeline."
     )
     parser.add_argument(
         "--segm-json",
-        help = "path to JSON file containing segmentation parameters (including nuclearStainChannel and nuclearStainCycle)."
+        help = "Path to JSON file containing segmentation parameters (including nuclearStainChannel and nuclearStainCycle)."
     )
     parser.add_argument(
         "--segm-text",
-        help = "path to text file containing segmentation parameters (including nuclearStainChannel and nuclearStainCycle)."
+        help = "Path to text file containing segmentation parameters (including nuclearStainChannel and nuclearStainCycle). This is usually found in the \"processed\" directory in the submitted data."
     )
     parser.add_argument(
         "-c",
         "--channel-names",
-        help = "path to text file containing list of channel names."
+        help = "Path to text file containing list of channel names."
     )
     parser.add_argument(
         "-o",
         "--outfile",
-        help = "path to YAML output file."
+        help = "Path to YAML output file."
     )
 
     args = parser.parse_args()
