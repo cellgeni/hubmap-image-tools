@@ -79,7 +79,7 @@ def calculate_target_shape( magnification, tileHeight, tileWidth ) :
     return [ dims[ "height" ], dims[ "width" ] ]
 
 
-# main()
+
 if __name__ == "__main__" :
     # Set up argument parser and parse the command line arguments.
     parser = argparse.ArgumentParser( 
@@ -320,7 +320,4 @@ if __name__ == "__main__" :
             default_flow_style = None,
             indent = 2
         )
-
-#if __name__ == "__main__":
-#    main()
 
