@@ -234,7 +234,8 @@ if __name__ == "__main__" :
     # If there are identical channel names, make them unique by adding
     # incremental numbers to the end.
     channelNames = make_channel_names_unique( channelNames )
-
+    
+    cytokitConfigAcquisition[ "channel_names" ] = channelNames
 
     logger.info( "Acquisition section complete." )
     
