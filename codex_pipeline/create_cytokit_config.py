@@ -101,7 +101,7 @@ def make_channel_names_unique( channelNames ) :
             newNames.append( channel )
     
     return newNames
-    
+   
 
 ########
 # MAIN #
@@ -215,7 +215,7 @@ if __name__ == "__main__" :
     cytokitConfigAcquisition[ "tile_overlap_y" ] = collect_attribute( [ "tile_overlap_Y" ], exptConfigDict )
     cytokitConfigAcquisition[ "tiling_mode" ] = collect_attribute( [ "tiling_mode" ], exptConfigDict )
     cytokitConfigAcquisition[ "per_cycle_channel_names" ] = collect_attribute( [ "channel_names" ], exptConfigDict )
-    cytokitConfigAcquisition[ "num_cycles" ] = collect_attribute( [ "num_cycles" ], exptConfigDict )
+   #cytokitConfigAcquisition[ "num_cycles" ] = collect_attribute( [ "num_cycles" ], exptConfigDict )
     
     # Collect channel names.
     channelNames = None
@@ -236,6 +236,13 @@ if __name__ == "__main__" :
     channelNames = make_channel_names_unique( channelNames )
     
     cytokitConfigAcquisition[ "channel_names" ] = channelNames
+
+    # Work out number of cycles based on number of channel names and per cycle
+    # channel names. The "num_cycles" field in the submitted config is not
+    # always accurate.
+    cytokitConfigAcquisition[ "num_cycles" ] = len( channelNames ) / len( cytokitConfigAcquisition[ "per_cycle_channel_names" ] )
+    
+    
 
     logger.info( "Acquisition section complete." )
     
