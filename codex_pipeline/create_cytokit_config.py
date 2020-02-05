@@ -94,7 +94,7 @@ if __name__ == "__main__" :
     }
 
     if "membrane_channel" in manifestInfo :
-        cytoitConfig[ "processor" ][ "cytometry" ][ "membrane_channel_name" ] = manifestInfo[ "membrane_channel" ]
+        cytokitConfig[ "processor" ][ "cytometry" ][ "membrane_channel_name" ] = manifestInfo[ "membrane_channel" ]
     else :
         logger.warning( "No membrane stain channel found in manifest. Will only use nuclei channel for segmentation." )
 
