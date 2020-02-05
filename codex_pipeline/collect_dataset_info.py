@@ -55,6 +55,9 @@ def infer_channel_name_from_index( cycleIndex, channelIndex, channelNames, chann
     # None in this case.
     if any( x is -1 for x in [ cycleIndex, channelIndex ] ) :
         return None
+    
+    print( "cycle index: " + cycleIndex )
+    print( "channel index: " + channelIndex )
 
     cycleLastChannelIdx = cycleIndex * channelsPerCycle
 
