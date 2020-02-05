@@ -60,7 +60,6 @@ def infer_channel_name_from_index( cycleIndex, channelIndex, channelNames, chann
 
     cycleChannelIndices = range( cycleLastChannelIdx - channelsPerCycle, cycleLastChannelIdx )
 
-    irint( list( cycleChannelIndices ) )
     channelNameIdx = cycleChannelIndices[ channelIndex - 1 ]
 
     return channelNames[ channelNameIdx ]
