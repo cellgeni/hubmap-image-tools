@@ -44,7 +44,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "targetDirectory",
-        help = "Path to directory to be created. Will create a \"data\" directory inside this containing symlinks to the raw data. Default: ./datasetID_cytokit_analysis/"
+        help = "Path to directory to be created. Will create a \"data\" directory inside this containing symlinks to the raw data."
     )
 
     args = parser.parse_args()
