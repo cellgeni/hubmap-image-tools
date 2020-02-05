@@ -187,8 +187,6 @@ if __name__ == "__main__" :
     if not args.outfile :
         args.outfile = args.hubmapDatasetID + "_manifest.txt"
 
-    logger.info( "Output filename: " + args.outfile )
-
     if not args.channel_names :
         logger.info( "No channel names file passed. Will look for channel names in experiment JSON config." )
 
