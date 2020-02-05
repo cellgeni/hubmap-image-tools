@@ -227,7 +227,7 @@ if __name__ == "__main__" :
     
     datasetInfo[ "name" ] = args.hubmapDatasetID
     datasetInfo[ "date" ] = datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S')
-    datasetInfo[ "rawDataLocation" ] = args.rawDataLocation
+    datasetInfo[ "raw_data_location" ] = args.rawDataLocation
 
     
     datasetInfo[ "emission_wavelengths" ] = collect_attribute( [ "emission_wavelengths", "wavelengths" ], exptConfigDict )
