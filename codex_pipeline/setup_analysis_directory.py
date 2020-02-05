@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import argparse
+import json
 import logging
 import os
 import re
@@ -38,28 +39,38 @@ if __name__ == "__main__":
         description = "Set up a directory in which to run Cytokit analysis. Populate directory with a \"data\" directory containing symlinks to the raw image data."
     )
     parser.add_argument(
-        "sourceDirectory",
-        help = "Path to directory containing raw CODEX data directories."
+        "manifestFile",
+        help = "Path to JSON manifest file containing path to raw CODEX data directory."
     )
     parser.add_argument(
         "targetDirectory",
-        help = "Path to directory to be created. Will create a \"data\" directory inside this containing symlinks to the raw data."
+        help = "Path to directory to be created. Will create a \"data\" directory inside this containing symlinks to the raw data. Default: ./datasetID_cytokit_analysis/"
     )
 
     args = parser.parse_args()
 
-    
     ###################################################################
     # Inspect source directories and collect paths to raw data files. #
     ###################################################################
     
+    logger.info( "Reading manifest file " + args.manifestFilename + "..." )
+
+    with open( args.manifestFilename, 'r' ) as manifestFile :
+        manifestJsonData = manifestFile.read()
+
+    logger.info( "Finished reading manifest file." )
+
+    manifestInfo = json.loads( manifestJsonData )
+	
+    rawDataLocation = manifestInfo[ "raw_data_location" ]
+
     # Ensure that source directory exists and is readable.
-    st = os.stat( args.sourceDirectory )
+    st = os.stat( rawDataLocation )
     readable = bool( st.st_mode & stat.S_IRUSR )
     if not readable :
         logger.error(
             "Source directory " +
-            args.sourceDirectory +
+            rawDataLocation +
             " is not readable by the current user."
         )
         sys.exit(1)
@@ -69,11 +80,11 @@ if __name__ == "__main__":
     # subdirectories, one for each cycle-region pair.
     sourceDirList = None
     try :
-        sourceDirList = os.listdir( args.sourceDirectory )
+        sourceDirList = os.listdir( rawDataLocation )
     except OSError as err :
         logger.error(
             "Could not acquire list of contents for " +
-            args.sourceDirectory +
+            rawDataLocation +
             " : " +
             err.strerror
         )
@@ -93,7 +104,7 @@ if __name__ == "__main__":
 
         logger.error( 
             "No directories matching expected raw data directory naming pattern found in " +
-            args.sourceDirectory 
+            rawDataLocation 
         )
         sys.exit(1)
     
@@ -108,7 +119,7 @@ if __name__ == "__main__":
         fileList = None
 
         try :
-            fileList = os.listdir( os.path.join( args.sourceDirectory, sdir ) )
+            fileList = os.listdir( os.path.join( rawDataLocation, sdir ) )
         except OSError as err :
             logger.error(
                 "Could not acquire list of contents for " +
@@ -209,7 +220,7 @@ if __name__ == "__main__":
             linkTifFilePath = os.path.join( cycleRegionDir, linkTifFileName )
             
             # Full path to source raw data file.
-            sourceTifFilePath = os.path.join( args.sourceDirectory, sdir, tifFileName )
+            sourceTifFilePath = os.path.join( rawDataLocation, sdir, tifFileName )
             
             # Create the symlink.
             try :
