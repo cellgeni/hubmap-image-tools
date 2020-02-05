@@ -164,7 +164,7 @@ if __name__ == "__main__" :
     parser.add_argument(
         "-o",
         "--outfile",
-        help = "Path to output file manifest (JSON format)."
+        help = "Path to output file manifest (JSON format). Default: ./<dataset ID>_manifest.json."
     )
 
     args = parser.parse_args()
@@ -185,7 +185,7 @@ if __name__ == "__main__" :
         )
 
     if not args.outfile :
-        args.outfile = args.hubmapDatasetID + "_manifest.txt"
+        args.outfile = args.hubmapDatasetID + "_manifest.json"
 
     if not args.channel_names :
         logger.info( "No channel names file passed. Will look for channel names in experiment JSON config." )
@@ -318,7 +318,7 @@ if __name__ == "__main__" :
 
     # The target_shape needs to be worked out based on the metadata. See
     # comments on calculate_target_shape() function definition.
-    targetShape = calculate_target_shape( 
+    datasetInfo[ "target_shape" ] = calculate_target_shape( 
         datasetInfo[ "magnification" ], 
         datasetInfo[ "tile_height" ], 
         datasetInfo[ "tile_width" ],
