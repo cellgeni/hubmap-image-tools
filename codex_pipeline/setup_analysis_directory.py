@@ -197,7 +197,8 @@ if __name__ == "__main__":
     for subDir in [ "data", "output" ] :
         create_analysis_subdir( args.targetDirectory, subDir )
 
-    
+    dataDir = os.path.join( args.targetDirectory, "data" )
+
     # Create cycle-region directories containing symlinks to files.
     logger.info( "Creating symlinks to raw data files..." )
     for sdir in sourceDataFiles :
