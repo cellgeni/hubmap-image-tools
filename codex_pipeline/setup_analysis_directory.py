@@ -200,7 +200,7 @@ if __name__ == "__main__":
     dataDir = os.path.join( args.targetDirectory, "data" )
 
     # Create cycle-region directories containing symlinks to files.
-    logger.info( "Creating symlinks to raw data files..." )
+    logger.info( "Creating symlinks to raw data files in " + dataDir + "..." )
     for sdir in sourceDataFiles :
         
         dirMatch = rawDirNamingPattern.match( sdir )
