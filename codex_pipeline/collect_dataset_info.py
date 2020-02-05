@@ -64,7 +64,7 @@ def infer_channel_name_from_index( cycleIndex, channelIndex, channelNames, chann
 
     print( "cycle last channel index: " + str( cycleLastChannelIdx ) )
 
-    cycleChannelIndices = range( cycleLastChannelIdx - channelsPerCycle, cycleLastChannelIdx - 1 )
+    cycleChannelIndices = range( cycleLastChannelIdx - channelsPerCycle, cycleLastChannelIdx )
 
     print( "cycle channel indices: " )
     print( list( cycleChannelIndices ) )
