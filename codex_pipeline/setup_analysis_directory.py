@@ -33,6 +33,27 @@ rawFileNamingPattern = re.compile( r'^\d_\d{5}_Z\d{3}_CH\d\.tif$' )
 rawFileRegionPattern = re.compile( r'^\d' )
 
 
+def create_analysis_subdir( targetDir, dirName ) :
+
+    newDir = os.path.join( targetDir, dirName )
+
+    try :
+        os.mkdir( newDir )
+    except OSError as err :
+        logger.error( 
+            "Could not create data directory " +
+            newDir +
+            " : " +
+            err.strerror
+        )
+        sys.exit(1)
+    else :
+        logger.info( "Directory %s created." % newDir )
+
+
+########
+# MAIN #
+########
 if __name__ == "__main__":
     
     parser = argparse.ArgumentParser(
@@ -173,20 +194,8 @@ if __name__ == "__main__":
 
     # Create data directory under the target directory -- this is where the
     # symlinks to the raw data will go.
-    dataDir = os.path.join( args.targetDirectory, "data" )
-
-    try :
-        os.mkdir( dataDir )
-    except OSError as err :
-        logger.error( 
-            "Could not create data directory " +
-            dataDir +
-            " : " +
-            err.strerror
-        )
-        sys.exit(1)
-    else :
-        logger.info( "Directory for data symlinks created at %s" % dataDir )
+    for subDir in [ "data", "output" ] :
+        create_analysis_subdir( args.targetDirectory, subDir )
 
     
     # Create cycle-region directories containing symlinks to files.
