@@ -128,7 +128,7 @@ if __name__ == "__main__" :
 
     with open( args.outfile, 'w') as outFile:
         yaml.safe_dump( 
-            cytokitConfigMain, 
+            cytokitConfig, 
             outFile,
             encoding = "utf-8",
             default_flow_style = None,
