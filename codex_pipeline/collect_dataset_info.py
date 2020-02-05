@@ -164,7 +164,7 @@ if __name__ == "__main__" :
     parser.add_argument(
         "-o",
         "--outfile",
-        help = "Path to output file manifest (JSON format). Default: ./<dataset ID>_manifest.json."
+        help = "Path to output file pipeline config (JSON format). Default: ./<dataset ID>_pipelineConfig.json."
     )
 
     args = parser.parse_args()
@@ -185,7 +185,7 @@ if __name__ == "__main__" :
         )
 
     if not args.outfile :
-        args.outfile = args.hubmapDatasetID + "_manifest.json"
+        args.outfile = args.hubmapDatasetID + "_pipelineConfig.json"
 
     if not args.channel_names :
         logger.info( "No channel names file passed. Will look for channel names in experiment JSON config." )
@@ -325,11 +325,11 @@ if __name__ == "__main__" :
     )
 
 
-    #######################
-    # Write JSON manifest #
-    #######################
-    logger.info( "Writing manifest..." )
+    ##############################
+    # Write JSON pipeline config #
+    ##############################
+    logger.info( "Writing pipeline config..." )
     with open( args.outfile, 'w' ) as outfile:
         json.dump( datasetInfo, outfile, indent = 4 )
 
-    logger.info( "Written manifest to " + args.outfile )
+    logger.info( "Written pipeline config to " + args.outfile )

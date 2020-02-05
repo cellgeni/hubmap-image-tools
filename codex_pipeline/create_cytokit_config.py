@@ -25,7 +25,7 @@ if __name__ == "__main__" :
         help = "HuBMAP dataset ID, e.g. HBM123.ABCD.456."
     )
     parser.add_argument(
-        "manifestFilename",
+        "pipelineConfigFilename",
         help = "JSON file containing all information required for config generation."
     )
     parser.add_argument(
@@ -39,18 +39,18 @@ if __name__ == "__main__" :
     if not args.outfile :
         args.outfile = args.hubmapDatasetID + "_experiment.yaml"
 
-    logger.info( "Reading manifest file " + args.manifestFilename + "..." )
+    logger.info( "Reading pipeline config file " + args.pipelineConfigFilename + "..." )
 
-    with open( args.manifestFilename, 'r' ) as manifestFile :
-        manifestJsonData = manifestFile.read()
+    with open( args.pipelineConfigFilename, 'r' ) as pipelineConfigFile :
+        pipelineConfigJsonData = pipelineConfigFile.read()
 
-    logger.info( "Finished reading manifest file." )
+    logger.info( "Finished reading pipeline config file." )
 
-    manifestInfo = json.loads( manifestJsonData )
+    pipelineConfigInfo = json.loads( pipelineConfigJsonData )
 
     cytokitConfig = {
-            "name" : manifestInfo[ "name" ],
-            "date" : manifestInfo[ "date" ],
+            "name" : pipelineConfigInfo[ "name" ],
+            "date" : pipelineConfigInfo[ "date" ],
             "environment" : {
                 "path_formats" : "keyence_multi_cycle_v01"
             },
@@ -67,11 +67,11 @@ if __name__ == "__main__" :
                 },
                 "deconvolution" : { "n_iter" : 25, "scale_factor" : .5 },
                 "tile_generator" : { "raw_file_type" : "keyence_mixed" },
-                "best_focus" : { "channel" : manifestInfo[ "best_focus" ] },
-                "drift_compensation" : { "channel" : manifestInfo[ "drift_compensation" ] },
+                "best_focus" : { "channel" : pipelineConfigInfo[ "best_focus" ] },
+                "drift_compensation" : { "channel" : pipelineConfigInfo[ "drift_compensation" ] },
                 "cytometry" : {
-                    "target_shape" : manifestInfo[ "target_shape" ],
-                    "nuclei_channel_name" : manifestInfo[ "nuclei_channel" ],
+                    "target_shape" : pipelineConfigInfo[ "target_shape" ],
+                    "nuclei_channel_name" : pipelineConfigInfo[ "nuclei_channel" ],
                     "segmentation_params" : {
                         "memb_min_dist" : 8,
                         "memb_sigma" : 5,
@@ -93,10 +93,10 @@ if __name__ == "__main__" :
             ]
     }
 
-    if "membrane_channel" in manifestInfo :
-        cytokitConfig[ "processor" ][ "cytometry" ][ "membrane_channel_name" ] = manifestInfo[ "membrane_channel" ]
+    if "membrane_channel" in pipelineConfigInfo :
+        cytokitConfig[ "processor" ][ "cytometry" ][ "membrane_channel_name" ] = pipelineConfigInfo[ "membrane_channel" ]
     else :
-        logger.warning( "No membrane stain channel found in manifest. Will only use nuclei channel for segmentation." )
+        logger.warning( "No membrane stain channel found in pipeline config. Will only use nuclei channel for segmentation." )
 
     # Populate acquisition section.
     acquisitionFields = [
@@ -121,7 +121,7 @@ if __name__ == "__main__" :
                 ]
 
     for field in acquisitionFields :
-        cytokitConfig[ "acquisition" ][ field ] = manifestInfo[ field ]
+        cytokitConfig[ "acquisition" ][ field ] = pipelineConfigInfo[ field ]
 
     # Write config in YAML format. 
     logger.info( "Writing Cytokit config to " + args.outfile )

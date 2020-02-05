@@ -60,8 +60,8 @@ if __name__ == "__main__":
         description = "Set up a directory in which to run Cytokit analysis. Populate directory with a \"data\" directory containing symlinks to the raw image data."
     )
     parser.add_argument(
-        "manifestFilename",
-        help = "Path to JSON manifest file containing path to raw CODEX data directory."
+        "pipelineConfigFilename",
+        help = "Path to JSON pipeline config file containing path to raw CODEX data directory."
     )
     parser.add_argument(
         "targetDirectory",
@@ -74,16 +74,16 @@ if __name__ == "__main__":
     # Inspect source directories and collect paths to raw data files. #
     ###################################################################
     
-    logger.info( "Reading manifest file " + args.manifestFilename + "..." )
+    logger.info( "Reading pipeline config file " + args.pipelineConfigFilename + "..." )
 
-    with open( args.manifestFilename, 'r' ) as manifestFile :
-        manifestJsonData = manifestFile.read()
+    with open( args.pipelineConfigFilename, 'r' ) as pipelineConfigFile :
+        pipelineConfigJsonData = pipelineConfigFile.read()
 
-    logger.info( "Finished reading manifest file." )
+    logger.info( "Finished reading pipeline config file." )
 
-    manifestInfo = json.loads( manifestJsonData )
+    pipelineConfigInfo = json.loads( pipelineConfigJsonData )
 	
-    rawDataLocation = manifestInfo[ "raw_data_location" ]
+    rawDataLocation = pipelineConfigInfo[ "raw_data_location" ]
 
     # Ensure that source directory exists and is readable.
     st = os.stat( rawDataLocation )
