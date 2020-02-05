@@ -39,7 +39,7 @@ if __name__ == "__main__":
         description = "Set up a directory in which to run Cytokit analysis. Populate directory with a \"data\" directory containing symlinks to the raw image data."
     )
     parser.add_argument(
-        "manifestFile",
+        "manifestFilename",
         help = "Path to JSON manifest file containing path to raw CODEX data directory."
     )
     parser.add_argument(
