@@ -197,18 +197,20 @@ if __name__ == "__main__" :
     # Read in the experiment JSON config.
     with open( args.exptJsonFileName, 'r' ) as exptJsonFile :
         exptJsonData = exptJsonFile.read()
-    logger.info( "Read file " + args.exptJsonFileName )
+    logger.info( "Finished reading file " + args.exptJsonFileName )
 
     # Create dictionary from experiment JSON config.
     exptConfigDict = json.loads( exptJsonData )
     
     # Read in the segmentation parameters. If we have a JSON file, use that.
     if args.segm_json :
+        logger.info( "Reading segmentation parameters from " + args.segm_json + "..." )
         with open( args.segm_json, 'r' ) as segmJsonFile :
             segmJsonData = segmJsonFile.read()
         segmParams = json.loads( segmJsonData )
     else :
 
+        logger.info( "Reading segmentation parameters from " + args.segm_text + "..." )
         with open( args.segm_text, 'r' ) as segmTextFile :
             fileLines = segmTextFile.read().splitlines()
             segmParams = {}
@@ -219,6 +221,8 @@ if __name__ == "__main__" :
                 if numMatch :
                     fieldContents = int( fieldContents )
                 segmParams[ fieldName ] = fieldContents
+    
+    logger.info( "Finished reading segmentation parameters." )
 
     
     datasetInfo = {}
@@ -326,5 +330,8 @@ if __name__ == "__main__" :
     #######################
     # Write JSON manifest #
     #######################
+    logger.info( "Writing manifest..." )
     with open( args.outfile, 'w' ) as outfile:
         json.dump( datasetInfo, outfile, indent = 4 )
+
+    logger.info( "Written manifest to " + args.outfile )
