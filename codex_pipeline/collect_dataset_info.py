@@ -302,7 +302,7 @@ if __name__ == "__main__" :
         sys.exit( 1 )
 
     membraneChannel = collect_attribute( [ "membraneStainChannel" ], segmParams )
-    membraneCycle = collect_attribute( [ "membrainStainCycle" ], segmParams )
+    membraneCycle = collect_attribute( [ "membraneStainCycle" ], segmParams )
     membraneChannelName = infer_channel_name_from_index( 
         membraneCycle, 
         membraneChannel, 
