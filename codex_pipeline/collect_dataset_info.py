@@ -336,4 +336,4 @@ if __name__ == "__main__" :
     # Write JSON manifest #
     #######################
     with open( args.outfile, 'w' ) as outfile:
-        json.dump( datasetInfo, outfile)
+        json.dump( datasetInfo, outfile, indent = 4 )
