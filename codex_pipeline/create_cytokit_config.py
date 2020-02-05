@@ -54,7 +54,7 @@ if __name__ == "__main__" :
             "environment" : {
                 "path_formats" : "keyence_multi_cycle_v01"
             },
-            "aquisition" : { }, # This is populated below.
+            "acquisition" : { }, # This is populated below.
             "processor" : {
                 "args" : {
                     "gpus" : [ 0, 1 ],
