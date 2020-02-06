@@ -271,8 +271,8 @@ if __name__ == "__main__" :
     bestFocusChannel = collect_attribute( [ "bestFocusReferenceChannel", "best_focus_channel" ], exptConfigDict )
     bestFocusCycle = collect_attribute( [ "bestFocusReferenceCycle" ], exptConfigDict )
     bestFocusChannelName = infer_channel_name_from_index( 
-        bestFocusCycle, 
-        bestFocusChannel, 
+        int( bestFocusCycle ), 
+        int( bestFocusChannel ), 
         datasetInfo[ "channel_names" ],
         len( datasetInfo[ "per_cycle_channel_names" ] )
     )
@@ -280,8 +280,8 @@ if __name__ == "__main__" :
     driftCompChannel = collect_attribute( [ "driftCompReferenceChannel", "drift_comp_channel" ], exptConfigDict )
     driftCompCycle = collect_attribute( [ "driftCompReferenceCycle" ], exptConfigDict )
     driftCompChannelName = infer_channel_name_from_index( 
-        driftCompCycle, 
-        driftCompChannel, 
+        int( driftCompCycle ), 
+        int( driftCompChannel ), 
         datasetInfo[ "channel_names" ],
         len( datasetInfo[ "per_cycle_channel_names" ] )
     )
@@ -292,8 +292,8 @@ if __name__ == "__main__" :
     nucleiChannel = collect_attribute( [ "nuclearStainChannel" ], segmParams )
     nucleiCycle = collect_attribute( [ "nuclearStainCycle" ], segmParams )
     nucleiChannelName = infer_channel_name_from_index( 
-        nucleiCycle, 
-        nucleiChannel, 
+        int( nucleiCycle ), 
+        int( nucleiChannel ), 
         datasetInfo[ "channel_names" ],
         len( datasetInfo[ "per_cycle_channel_names" ] )
     )
@@ -306,8 +306,8 @@ if __name__ == "__main__" :
     membraneChannel = collect_attribute( [ "membraneStainChannel" ], segmParams )
     membraneCycle = collect_attribute( [ "membraneStainCycle" ], segmParams )
     membraneChannelName = infer_channel_name_from_index( 
-        membraneCycle, 
-        membraneChannel, 
+        int( membraneCycle ), 
+        int( membraneChannel ), 
         datasetInfo[ "channel_names" ],
         len( datasetInfo[ "per_cycle_channel_names" ] )
     )
