@@ -13,7 +13,6 @@ Channel
     1. Set up data directory.
     2. Create YAML config.
     3. Run Cytokit processor.
-    4. Run Cytokit analysis.
  */
 
 
@@ -63,9 +62,14 @@ process run_cytokit_processor {
         '''
         mkdir output
         
-        echo "cytokit processor run_all --config-path=!{yaml_config} --data-dir=!{data_dir}/data --output-dir=output"
-        
-        mkdir output/processor
-        mkdir output/cytometry
+        singularity exec --nv -B $HUBMAP_LZ:$HUBMAP_LZ -B $CYTOKIT_DATADIR:/lab/data $CYTOKIT_CONTAINER bash
+
+        source $CYTOKIT_ENV
+
+        conda activate cytokit
+
+        cytokit processor run_all --config-path=!{yaml_config} --data-dir=!{data_dir}/data --output-dir=output
         '''
 }
+
+
