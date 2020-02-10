@@ -62,8 +62,8 @@ process run_cytokit_processor {
         '''
         mkdir output
         
-        echo "source $CYTOKIT_ENV" >> $SINGULARITY_ENVIRONMENT
-        echo "conda activate cytokit" >> $SINGULARITY_ENVIRONMENT
+        source $CYTOKIT_ENV
+        conda activate cytokit
 
         cytokit processor run_all --config-path=!{yaml_config} --data-dir=!{data_dir}/data --output-dir=output
         '''
