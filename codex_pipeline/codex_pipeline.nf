@@ -28,7 +28,7 @@ process setup_data_directory {
 
     shell:
         '''
-        python3 $HUBMAP_IMAGE_TOOLS/codex_pipeline/setup_data_directory.py !{configPath} !{datasetID}_data
+        $HUBMAP_IMAGE_TOOLS/codex_pipeline/setup_data_directory.py !{configPath} !{datasetID}_data
         '''
 }
 
@@ -44,7 +44,7 @@ process create_yaml_config {
 
     shell:
         '''
-        python3 $HUBMAP_IMAGE_TOOLS/codex_pipeline/create_cytokit_config.py !{datasetID} !{configPath}
+        $HUBMAP_IMAGE_TOOLS/codex_pipeline/create_cytokit_config.py !{datasetID} !{configPath}
         '''
 }
 
