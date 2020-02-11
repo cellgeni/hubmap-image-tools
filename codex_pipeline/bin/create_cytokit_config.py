@@ -11,6 +11,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 
+# Some constants to use below.
+path_format = "keyence_multi_cycle_v01"
+gpus = [ 0, 1 ]
+memory_limit = "64G"
+
+
 
 ########
 # MAIN #
@@ -52,12 +58,13 @@ if __name__ == "__main__" :
             "name" : pipelineConfigInfo[ "name" ],
             "date" : pipelineConfigInfo[ "date" ],
             "environment" : {
-                "path_formats" : "keyence_multi_cycle_v01"
+                "path_formats" : path_format
             },
             "acquisition" : { }, # This is populated below.
             "processor" : {
                 "args" : {
-                    "gpus" : [ 0, 1 ],
+                    "gpus" : gpus,
+                    "memory_limit" : memory_limit,
                     "run_crop" : True,
                     "run_tile_generator" : True,
                     "run_drift_comp" : True,
