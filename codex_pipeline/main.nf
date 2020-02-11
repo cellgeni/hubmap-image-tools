@@ -28,7 +28,7 @@ process setup_data_directory {
 
     shell:
         '''
-        $HUBMAP_IMAGE_TOOLS/codex_pipeline/setup_data_directory.py !{configPath} !{datasetID}_data
+        $CODEX_PIPELINE_CODEBASE/setup_data_directory.py !{configPath} !{datasetID}_data
         '''
 }
 
@@ -44,7 +44,7 @@ process create_yaml_config {
 
     shell:
         '''
-        $HUBMAP_IMAGE_TOOLS/codex_pipeline/create_cytokit_config.py !{datasetID} !{configPath}
+        $CODEX_PIPELINE_CODEBASE/create_cytokit_config.py !{datasetID} !{configPath}
         '''
 }
 
@@ -62,7 +62,7 @@ process run_cytokit_processor {
         '''
         mkdir output
         
-        source $CYTOKIT_ENV_DIR/cytokit_env
+        source $CODEX_PIPELINE_CODEBASE/cytokit_env
         conda activate cytokit
 
         cytokit processor run_all --config-path=!{yaml_config} --data-dir=!{data_dir} --output-dir=output
