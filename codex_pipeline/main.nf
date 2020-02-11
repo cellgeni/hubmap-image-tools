@@ -49,11 +49,6 @@ process create_yaml_config {
 }
 
 process run_cytokit_processor {
-    
-    singularity {
-        runOptions = "--nv $CYTOKIT_DATADIR:/lab/data"
-        envWhitelist = "CYTOKIT_ENV, CYTOKIT_DATADIR"
-    }
 
     input:
         val datasetID from datasets_with_yaml_ch
