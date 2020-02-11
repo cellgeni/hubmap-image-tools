@@ -62,7 +62,7 @@ process run_cytokit_processor {
         '''
         mkdir output
         
-        source $CYTOKIT_ENV
+        source $CYTOKIT_ENV_DIR/cytokit_env
         conda activate cytokit
 
         cytokit processor run_all --config-path=!{yaml_config} --data-dir=!{data_dir} --output-dir=output
