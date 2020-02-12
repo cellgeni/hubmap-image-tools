@@ -17,6 +17,8 @@ Channel
 
 
 process setup_data_directory {
+    
+    label "cpu"
 
     input:
         set datasetID, file( configPath ) from datasets_ch
@@ -34,6 +36,8 @@ process setup_data_directory {
 
 process create_yaml_config {
 
+    label "cpu"
+    
     input:
         val datasetID from datasets_with_data_dir_ch
         file configPath from config_paths_ch
@@ -49,6 +53,8 @@ process create_yaml_config {
 }
 
 process run_cytokit_processor {
+
+    label "gpu"
 
     input:
         val datasetID from datasets_with_yaml_ch
